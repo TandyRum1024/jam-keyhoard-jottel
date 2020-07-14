@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="32" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="23">
+ <editorsettings>
+  <export target="rm_down_jump.room.gmx" format="gmx"/>
+ </editorsettings>
+ <properties>
+  <property name="speed" type="int" value="60"/>
+ </properties>
+ <tileset firstgid="1" source="tiles.tsx"/>
+ <tileset firstgid="2" source="objects.tsx"/>
+ <layer id="1" name="tile" width="32" height="30">
+  <data encoding="base64" compression="zlib">
+   eAHFj1sOwyAMBNv7X7r1x0gjyxhIaYIU7WLvg7xez5/39wlPfPx5dN993Gl+1zvcab7SH/r8rfiscae5NVd5ftvoTn7VX3nQz7DyVjNyqn52V5CuzutO9GDnO7Xr+r071Zdz3MF/jxCv98xW0V44Xu4jRHcFR5kx55h7hpdZhWiMu7qqPzLIrPJ2Z2QZyRj1x967ykvGDO2F43EHM7DboVlFekF8XUe3Cz9ZM5278FSznJPveFaQnpzBnAzuIPNAZhmtucIjj2PODDzZS1Zku9OcXjR4VjT2zrjzzPG5F85uFyu/O80jG32Hu2/Ienead/05o9JWGs/8T8xX+tH+iqN+v8Eaz1e6s7e7k4cm3//Z7ezczzt2kIwdJH/Hc1JL/5P4AZVcAUE=
+  </data>
+ </layer>
+ <objectgroup id="2" name="obj">
+  <object id="1" name="UPGRADE : JUMP" type="oPickupUpgradeJump" gid="5" x="480" y="896" width="32" height="32"/>
+  <object id="3" template="temp/oKNT.tx" x="0" y="-32"/>
+  <object id="4" template="temp/oRoom.tx" x="0" y="-96">
+   <properties>
+    <property name="code">title = &quot;QUADRATIC JUMPER SEWAGE&quot;;
+subtitle = &quot;EVERYTHING SOUNDS AND SMELLS WET&quot;;</property>
+   </properties>
+  </object>
+  <object id="5" template="temp/oDoor.tx" x="864" y="160">
+   <properties>
+    <property name="code">dest = rm_down1;
+doorID = 42;</property>
+   </properties>
+  </object>
+  <object id="6" template="temp/oDoor.tx" x="896" y="320">
+   <properties>
+    <property name="code">dest = rm_down_weapon;
+doorID = 24;</property>
+   </properties>
+  </object>
+  <object id="7" template="temp/oDoor.tx" x="96" y="544">
+   <properties>
+    <property name="code">dest = rm_down_powercell;
+doorID = 512;</property>
+   </properties>
+  </object>
+  <object id="11" template="temp/oTeleport.tx" x="448" y="896"/>
+  <object id="12" template="temp/oPickupUpgradeHealth.tx" x="768" y="800"/>
+  <object id="14" template="temp/oPickupItemPowercell.tx" x="96" y="256"/>
+  <object id="17" template="temp/oPickupItemPowercell.tx" x="320" y="896"/>
+  <object id="19" template="temp/view.tx" x="576" y="96"/>
+  <object id="21" template="temp/oEnemy.tx" x="704" y="800"/>
+  <object id="22" template="temp/oEnemy.tx" x="576" y="384"/>
+ </objectgroup>
+</map>

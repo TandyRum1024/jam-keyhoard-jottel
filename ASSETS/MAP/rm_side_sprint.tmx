@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="24" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="9">
+ <editorsettings>
+  <export target="rm_side_sprint.room.gmx" format="gmx"/>
+ </editorsettings>
+ <properties>
+  <property name="speed" type="int" value="60"/>
+ </properties>
+ <tileset firstgid="1" source="objects.tsx"/>
+ <tileset firstgid="7" source="tiles.tsx"/>
+ <layer id="1" name="tile" width="24" height="10">
+  <data encoding="base64" compression="zlib">
+   eAFjYKA9YAdaQQsMcznIbGoDZDOR2dSyB9lMZDatzQfZhY5x2YmuDp0P0wcSJwegm4fOh5kJE4fxSaFherHRMHOwyVFDDGY+LWkA2OkCPw==
+  </data>
+ </layer>
+ <objectgroup id="2" name="obj">
+  <object id="1" template="temp/oKNT.tx" x="0" y="-32"/>
+  <object id="2" template="temp/oRoom.tx" x="0" y="-96">
+   <properties>
+    <property name="code">title = &quot;C'EST SPRINTER&quot;;
+subtitle = &quot;WOW. SPRINTING?&quot;;</property>
+   </properties>
+  </object>
+  <object id="3" template="temp/oTeleport.tx" x="416" y="256"/>
+  <object id="5" template="temp/oDoor.tx" x="192" y="256">
+   <properties>
+    <property name="code">dest = rm_side_lobby;
+doorID = 85;</property>
+   </properties>
+  </object>
+  <object id="6" template="temp/oDoor.tx" x="608" y="160">
+   <properties>
+    <property name="code">dest = rm_side_lobby;
+doorID = 86;</property>
+   </properties>
+  </object>
+  <object id="7" name="UPGRADE : SPRINT" type="oPickupUpgradeSprint" gid="4" x="352" y="256" width="32" height="32"/>
+  <object id="8" template="temp/view.tx" x="64" y="32"/>
+ </objectgroup>
+</map>

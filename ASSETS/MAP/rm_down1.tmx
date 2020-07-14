@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="20" height="19" tilewidth="32" tileheight="32" infinite="0" nextlayerid="4" nextobjectid="16">
+ <editorsettings>
+  <export target="rm_down1.room.gmx" format="gmx"/>
+ </editorsettings>
+ <properties>
+  <property name="speed" type="int" value="60"/>
+ </properties>
+ <tileset firstgid="1" source="tiles.tsx"/>
+ <tileset firstgid="2" source="objects.tsx"/>
+ <layer id="1" name="tile" width="20" height="19">
+  <data encoding="base64" compression="zlib">
+   eAG1jtsKwCAMQ93///TWhwMhxOKcEyQ2NzvG+XM9lScum1XX16Md+t7t1Q59e19pft1Ts3as+GcdmsWjnP6DntAzmptpie84/tVuuMIumzSyqU/9+GaIF93n4hOH39G9NX85qQ9up5ssOzEroq0gObzMb9HzzKtY/6XDHknruD/62CVht8uudgOpkwCH
+  </data>
+ </layer>
+ <objectgroup id="2" name="obj">
+  <object id="3" name="TP" type="oTeleport" gid="4" x="448" y="448" width="32" height="32"/>
+  <object id="4" name="UPGRADE : MOVE" type="oPickupUpgradeMobility" gid="5" x="352" y="448" width="32" height="32"/>
+  <object id="7" template="temp/oDoor.tx" x="416" y="544"/>
+  <object id="8" template="temp/oDoor.tx" x="96" y="160">
+   <properties>
+    <property name="code">dest = rm_hub;
+doorID = 1;</property>
+   </properties>
+  </object>
+  <object id="9" template="temp/oDoor.tx" x="320" y="224">
+   <properties>
+    <property name="code">dest = rm_down_jump;
+doorID = 42;</property>
+   </properties>
+  </object>
+  <object id="11" template="temp/oKNT.tx" x="0" y="-32"/>
+  <object id="12" template="temp/oRoom.tx" x="0" y="-96">
+   <properties>
+    <property name="code">title = &quot;DOWNGRADE TOENAIL PRIME&quot;;
+subtitle = &quot;&quot;;</property>
+   </properties>
+  </object>
+  <object id="13" template="temp/oPickupUpgradeHealth.tx" x="64" y="320"/>
+  <object id="14" template="temp/oPickupItemPowercell.tx" x="480" y="544"/>
+  <object id="15" template="temp/view.tx" x="64" y="64"/>
+ </objectgroup>
+</map>

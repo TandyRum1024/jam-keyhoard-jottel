@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template>
+ <object type="view" width="400" height="300">
+  <properties>
+   <property name="hport" type="int" value="600"/>
+   <property name="wport" type="int" value="800"/>
+  </properties>
+ </object>
+</template>

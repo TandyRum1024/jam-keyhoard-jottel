@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="20" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="29">
+ <editorsettings>
+  <export target="rm_debug.room.gmx" format="gmx"/>
+ </editorsettings>
+ <properties>
+  <property name="speed" type="int" value="60"/>
+ </properties>
+ <tileset firstgid="1" source="objects.tsx"/>
+ <tileset firstgid="7" source="tiles.tsx"/>
+ <layer id="1" name="tile" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eAHNj1sKACAIBPvr/jcuPxaGKLMHURBaq+Oa0v2TK/LGlTNjnR4ymO9yyWD+O8+80q/eXrSdej27u77i0bNmenu2mvYb/UuPRHppedQiLKthT49HPcJk/YjHmhmTtR5vVZvNXdULhC4C4A==
+  </data>
+ </layer>
+ <objectgroup id="2" name="obj">
+  <object id="1" template="temp/oKNT.tx" x="0" y="0"/>
+  <object id="2" template="temp/oRoom.tx" x="0" y="-64">
+   <properties>
+    <property name="code">title = &quot;DEBUG&quot;;
+subtitle = &quot;&quot;;</property>
+   </properties>
+  </object>
+  <object id="3" template="temp/oPickupUpgradeInv.tx" x="448" y="288"/>
+  <object id="4" template="temp/oPickupUpgradeInv.tx" x="384" y="288"/>
+  <object id="5" name="UPGRADE : WEAPON" type="oPickupUpgradeWeapon" gid="4" x="320" y="288" width="32" height="32"/>
+  <object id="6" name="UPGRADE : MOVE" type="oPickupUpgradeMobility" gid="4" x="256" y="288" width="32" height="32"/>
+  <object id="7" name="UPGRADE : JUMP" type="oPickupUpgradeJump" gid="4" x="224" y="288" width="32" height="32"/>
+  <object id="8" template="temp/view.tx" x="0" y="0"/>
+  <object id="11" template="temp/oEnemy.tx" x="288" y="448"/>
+  <object id="12" template="temp/oEnemy.tx" x="448" y="448"/>
+  <object id="14" template="temp/oDoor.tx" x="512" y="288">
+   <properties>
+    <property name="code">dest = rm_hub;
+doorID = 128;</property>
+   </properties>
+  </object>
+  <object id="16" template="temp/oPickupItemPowercell.tx" x="480" y="192"/>
+  <object id="17" template="temp/oPickupItemPowercell.tx" x="416" y="192"/>
+  <object id="19" template="temp/oPickupItemPowercell.tx" x="448" y="192"/>
+  <object id="20" template="temp/oPickupItemPowercell.tx" x="384" y="192"/>
+  <object id="21" template="temp/oPickupItemPowercell.tx" x="352" y="192"/>
+  <object id="22" template="temp/oPickupItemPowercell.tx" x="320" y="192"/>
+  <object id="23" template="temp/oPickupItemPowercell.tx" x="288" y="192"/>
+  <object id="24" template="temp/oPickupItemPowercell.tx" x="256" y="192"/>
+  <object id="25" template="temp/oPickupItemPowercell.tx" x="512" y="192"/>
+  <object id="28" template="temp/oPickupItemPowercell.tx" x="544" y="288"/>
+ </objectgroup>
+</map>

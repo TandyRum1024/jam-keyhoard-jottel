@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="20" height="13" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="24">
+ <editorsettings>
+  <export target="rm_hub.room.gmx" format="gmx"/>
+ </editorsettings>
+ <properties>
+  <property name="speed" type="int" value="60"/>
+ </properties>
+ <tileset firstgid="1" source="tiles.tsx"/>
+ <tileset firstgid="2" name="objects" tilewidth="64" tileheight="64" tilecount="6" columns="0">
+  <grid orientation="orthogonal" width="1" height="1"/>
+  <tile id="0">
+   <image width="32" height="32" source="../SPR/plr_single.png"/>
+  </tile>
+  <tile id="1">
+   <image width="32" height="32" source="../SPR/tile_door.png"/>
+  </tile>
+  <tile id="2">
+   <image width="32" height="32" source="../SPR/tile_teleport_single.png"/>
+  </tile>
+  <tile id="3">
+   <image width="32" height="32" source="../SPR/item_pickup.png"/>
+  </tile>
+  <tile id="4">
+   <image width="32" height="32" source="../SPR/enemy_single.png"/>
+  </tile>
+  <tile id="5">
+   <image width="64" height="64" source="../SPR/tile_objective.png"/>
+  </tile>
+ </tileset>
+ <tileset firstgid="8" source="objects.tsx"/>
+ <layer id="1" name="tile" width="20" height="13">
+  <data encoding="base64" compression="zlib">
+   eAGtjlsKACAMw/T+l1Y/AkF8UHQwWrotWsr/qh15al487YwZZU+Wqhn2KYd9M+yZp2qGfcph3wx75qmaMfyqd0x2PX/hmYOfeeSJ8k+UW7PJbgrDyo2zFw/vpzaEpABI
+  </data>
+ </layer>
+ <objectgroup id="2" name="obj">
+  <object id="3" name="PLAYER SPAWN" type="oPlayerSpawn" gid="2" x="320" y="0" width="32" height="32"/>
+  <object id="4" template="temp/oDoor.tx" x="96" y="352">
+   <properties>
+    <property name="code">dest = rm_down1;
+doorID = 1;</property>
+   </properties>
+  </object>
+  <object id="8" template="temp/oRoom.tx" x="0" y="0">
+   <properties>
+    <property name="code">title = &quot;THE LOBBY&quot;;
+subtitle = &quot;WELCOME&quot;;</property>
+   </properties>
+  </object>
+  <object id="9" template="temp/oDoor.tx" x="96" y="224">
+   <properties>
+    <property name="code">dest = rm_up_lobby;
+doorID = 42;</property>
+   </properties>
+  </object>
+  <object id="13" template="temp/oKNT.tx" x="0" y="-64"/>
+  <object id="15" name="TP" type="oTeleport" gid="4" x="224" y="352" width="32" height="32"/>
+  <object id="16" template="temp/oDoor.tx" x="512" y="288">
+   <properties>
+    <property name="code">dest = rm_side_lobby;
+doorID = 84;</property>
+   </properties>
+  </object>
+  <object id="18" template="temp/view.tx" x="0" y="0"/>
+  <object id="19" template="temp/oDoor.tx" x="384" y="352">
+   <properties>
+    <property name="code">dest = rm_debug;
+doorID = 128;</property>
+   </properties>
+  </object>
+  <object id="23" name="OBJECTIVE" type="oObjective" gid="13" x="288" y="352" width="64" height="64"/>
+ </objectgroup>
+</map>

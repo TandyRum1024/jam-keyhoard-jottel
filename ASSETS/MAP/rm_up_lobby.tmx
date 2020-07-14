@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="24" height="42" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="20">
+ <editorsettings>
+  <export target="rm_up_lobby.room.gmx" format="gmx"/>
+ </editorsettings>
+ <properties>
+  <property name="speed" type="int" value="60"/>
+ </properties>
+ <tileset firstgid="1" source="tiles.tsx"/>
+ <tileset firstgid="2" source="objects.tsx"/>
+ <layer id="1" name="tile" width="24" height="42">
+  <data encoding="base64" compression="zlib">
+   eAHNkVuKAzEQA7P3v/RufxQUQh57MgmsYeiHpLJDXq/vn5+/K77x8fJh+/gu7+/0ZrofBvw7vPSa6f4un7c0Bnem5jusmdV6eOSZzWCHx1pjsnOOLDsz2FFXGtymo5nBLv05twy7qY3jHT0Z5qk+3q96/M7itZa70a52qc3s4xmvd/a6t9d+9+P37Aws6+yy2uN+fJ6n54ORM3vXZFxpyWM2w/nprblvGrzGaNn0N0+y2pwce8x0b8+uf8J/9855U95rFpp3u99hveWTZc+TnntXfPST2t5BDu10xpcVDhV9Zp/UrZ30mV/xc3/CxuNs9jN7R+ZOdd59Y1zdh9YqrB0f36o2tpk7fcX1vjHQm8YOz0klQyXD3CqeVSWDzjyV491Vj/+kJv8kc8fzCf7Vb33K37Gf8E/Y/4nv957+x6v3v8Nqdza+2fQtu9tllvnTdfeOT+i/iOkBcg==
+  </data>
+ </layer>
+ <objectgroup id="2" name="obj">
+  <object id="2" template="temp/oDoor.tx" x="160" y="1216">
+   <properties>
+    <property name="code">dest = rm_hub;
+doorID = 42;</property>
+   </properties>
+  </object>
+  <object id="3" template="temp/oDoor.tx" x="576" y="640">
+   <properties>
+    <property name="code">dest = rm_up_kick;
+doorID = 43;</property>
+   </properties>
+  </object>
+  <object id="4" template="temp/oKNT.tx" x="0" y="-32"/>
+  <object id="5" template="temp/oRoom.tx" x="0" y="-96">
+   <properties>
+    <property name="code">title = &quot;VENTILATION DELUXE&quot;;
+subtitle = &quot;&quot;;</property>
+   </properties>
+  </object>
+  <object id="6" template="temp/oDoor.tx" x="672" y="480">
+   <properties>
+    <property name="code">dest = rm_up_kick;
+doorID = 44;</property>
+   </properties>
+  </object>
+  <object id="7" template="temp/oDoor.tx" x="352" y="640">
+   <properties>
+    <property name="code">dest = rm_up_house_1;
+doorID = 46;</property>
+   </properties>
+  </object>
+  <object id="9" template="temp/oDoor.tx" x="608" y="832">
+   <properties>
+    <property name="code">dest = rm_up_house_1;
+doorID = 45;</property>
+   </properties>
+  </object>
+  <object id="10" template="temp/oPickupUpgradeInv.tx" x="96" y="256"/>
+  <object id="11" template="temp/oPickupUpgradeInv.tx" x="96" y="896"/>
+  <object id="12" template="temp/oPickupItemPowercell.tx" x="576" y="288"/>
+  <object id="13" template="temp/view.tx" x="32" y="1024"/>
+  <object id="14" template="temp/oEnemy.tx" x="480" y="1280"/>
+  <object id="15" template="temp/oEnemy.tx" x="640" y="1056"/>
+  <object id="17" template="temp/oEnemy.tx" x="448" y="160"/>
+  <object id="18" template="temp/oEnemy.tx" x="128" y="896"/>
+  <object id="19" template="temp/oEnemy.tx" x="224" y="640"/>
+ </objectgroup>
+</map>

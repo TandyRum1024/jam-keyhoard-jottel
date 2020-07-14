@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.1" orientation="orthogonal" renderorder="right-down" compressionlevel="-1" width="17" height="17" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="7">
+ <editorsettings>
+  <export target="rm_down_powercell.room.gmx" format="gmx"/>
+ </editorsettings>
+ <properties>
+  <property name="speed" type="int" value="60"/>
+ </properties>
+ <tileset firstgid="1" source="objects.tsx"/>
+ <tileset firstgid="7" source="tiles.tsx"/>
+ <layer id="1" name="tile" width="17" height="17">
+  <data encoding="base64" compression="zlib">
+   eJxjYMAP2AnIEwLsSJgS/ehscvTjEyNFP6nmsKOx0fURMoMYe4hxJ7lqqBHu+PQTK0dJGkJm4/MjseKkuIeQ/4iNF3qZQQhTGwAAQTQCFQ==
+  </data>
+ </layer>
+ <objectgroup id="2" name="obj">
+  <object id="1" template="temp/oKNT.tx" x="0" y="-32"/>
+  <object id="2" template="temp/oRoom.tx" x="0" y="-96">
+   <properties>
+    <property name="code">title = &quot;POWERHAUS&quot;;
+subtitle = &quot;&quot;;</property>
+   </properties>
+  </object>
+  <object id="3" template="temp/oPickupItemPowercell.tx" x="256" y="160"/>
+  <object id="4" template="temp/oDoor.tx" x="256" y="480">
+   <properties>
+    <property name="code">dest = rm_down_jump;
+doorID = 512;</property>
+   </properties>
+  </object>
+  <object id="5" template="temp/view.tx" x="64" y="0"/>
+ </objectgroup>
+</map>
