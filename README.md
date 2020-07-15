@@ -1,7 +1,7 @@
 # :keyboard: KEYHOARD JOTTEL : GMTK BUILD SOURCE CODE :keyboard:
 ![banner](pics/GMTK20_COVER.png)
-### A source code of my metroidvania game with a twist : every item and upgrades uses your limited slots of keys on your keyboard, also an entry for [GMTK Game Jam 2020](itch.io/jam/gmtk-2020), written in 48 hours over the span of a weekend in 2020, July.
-### :point_right: See the game's [itch.io page](zikbakguru.itch.io/jottel) and the game's [submission page (rates & feedbacks are highly appreciated)](itch.io/jam/gmtk-2020/rate/699095) :point_left:
+### A source code of my metroidvania game with a twist : every item and upgrades uses your limited slots of keys on your keyboard, also an entry for [GMTK Game Jam 2020](https://itch.io/jam/gmtk-2020), written in 48 hours over the span of a weekend in 2020, July.
+### :point_right: See the game's [itch.io page](https://zikbakguru.itch.io/jottel) and the game's [submission page (rates & feedbacks are highly appreciated)](https://itch.io/jam/gmtk-2020/rate/699095) :point_left:
 [![Watch the gameplay video](pics/YT_VID_CAP.png)](https://youtu.be/jWNddsgIwSc)
 <br>(above links to the youtube video of gameplay)
 
@@ -17,14 +17,14 @@
 ![snd](pics/snd_view.png)
 ![mus](pics/mus_view.png)
 ![map](pics/map_view.png)
-They're conveniently placed inside of `/ASSETS` folder. The map file (`.tmx` file) can be opened with [Tiled map editor](thorbjorn.itch.io/tiled), The sound effect file (`.lch` files) can be opened with sfx synthesizer [LabChirp](labbed.itch.io/labchirp), And the music file (`loop1.kt` file) can be opened with music tracker [Klystrack](kometbomb.itch.io/klystrack).
+They're conveniently placed inside of `/ASSETS` folder. The map file (`.tmx` file) can be opened with [Tiled map editor](https://thorbjorn.itch.io/tiled), The sound effect file (`.lch` files) can be opened with sfx synthesizer [LabChirp](https://labbed.itch.io/labchirp), And the music file (`loop1.kt` file) can be opened with music tracker [Klystrack](https://kometbomb.itch.io/klystrack).
 
 ## :warning: Warning : Since this build is the exact same build as the gamejam build, This game contains various flaws! (for example; players can softlock the game by either falling out of bounds using the kicking moves or leaving the essential upgrades in a unreachable places) :warning:
 
 
 
 ## Credits
-* Font : [Sam3KRFont by hurss (MIT license)](github.com/hurss/fonts)
+* Font : [Sam3KRFont by hurss (MIT license)](https://github.com/hurss/fonts)
 ```
 The MIT License (MIT)
 Copyright (c) 2016 Damheo Lee (leedheo@gmail.com),
@@ -49,10 +49,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-* Ambient computer droning sound : [Server drone.wav by Jandre160108 (CC0 license)](freesound.org/people/Jandre160108/sounds/437404/)
+* Ambient computer droning sound : [Server drone.wav by Jandre160108 (CC0 license)](https://freesound.org/people/Jandre160108/sounds/437404/)
 
 ## Developement progress & misc. footages
-### **(Check out my twitter thread where I've posted a lot of in-development footages hete : [twitter.com/ZIKBAKGURI/status/1281659093766115328](twitter.com/ZIKBAKGURI/status/1281659093766115328))**
+### **(Check out my twitter thread where I've posted a lot of in-development footages hete : [twitter.com/ZIKBAKGURI/status/1281659093766115328](https://twitter.com/ZIKBAKGURI/status/1281659093766115328))**
 ![d1](pics/DEV1.gif)
 ![d2](pics/DEV2.gif)
 ![d3](pics/DEV3.gif)
