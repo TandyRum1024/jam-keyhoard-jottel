@@ -51,6 +51,11 @@ SOFTWARE.
 ```
 * Ambient computer droning sound : [Server drone.wav by Jandre160108 (CC0 license)](https://freesound.org/people/Jandre160108/sounds/437404/)
 
+## License
+* [The game's code (including the shader code) is licensed with GNU GENERAL PUBLIC LICENSE v3](COPYING.txt)
+* [The game's assets, excluding the ones mentioned in the Credits section (aka the ones that I have created : sprites, music, sounds, maps) are licensed with Creative Commons Attribution Share Alike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0/)
+<br>For the full license, refer to file `LICENSE_ASSETS.txt` and `COPYING.txt`
+
 ## Developement progress & misc. footages
 ### **(Check out my twitter thread where I've posted a lot of in-development footages hete : [twitter.com/ZIKBAKGURI/status/1281659093766115328](https://twitter.com/ZIKBAKGURI/status/1281659093766115328))**
 ![d1](pics/DEV1.gif)
