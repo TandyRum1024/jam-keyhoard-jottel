@@ -1,0 +1,315 @@
+{
+    "activeFile": "rm_up_kick.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "C:/Program Files/Tiled/examples/desert.tmx": {
+            "scale": 0.6716796875,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 640.9305030532131,
+                "y": 640.9305030532131
+            }
+        },
+        "C:/Program Files/Tiled/examples/sewers.tmx": {
+            "scale": 0.7164583333333333,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 600.8723466123872,
+                "y": 600.8723466123872
+            }
+        },
+        "C:/Program Files/Tiled/examples/sticker-knight/map/sandbox2.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 7,
+            "viewCenter": {
+                "x": 1265,
+                "y": 909
+            }
+        },
+        "C:/Program Files/Tiled/examples/sticker-knight/ui/title.json": {
+            "scale": 1.0333533653846152,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 608.2140157022392,
+                "y": 416.60482698458867
+            }
+        },
+        "C:/Users/VIN/Desktop/CRIKEYMAS_MAP/level_test.tmx": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 482.5,
+                "y": 262.5
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/cutscene_intro.tmx": {
+            "scale": 1,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 527,
+                "y": 559
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/cutscene_prototype_end.tmx": {
+            "scale": 2,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 382.5,
+                "y": 496.75
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/level_10.tmx": {
+            "scale": 3,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 2083,
+                "y": 295.5
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/level_2.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 1096,
+                "y": 518.3333333333333
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/level_2_alt.tmx": {
+            "scale": 1,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 513,
+                "y": 349
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/level_3.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 758.6666666666667,
+                "y": 415
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/level_4.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 1026,
+                "y": 669
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/level_5.tmx": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 1127,
+                "y": 810.5
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/level_6.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1231,
+                "y": 806.5
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/level_7.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 768,
+                "y": 926
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/level_8.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 850.6666666666666,
+                "y": 519.3333333333333
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/level_9.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 1270,
+                "y": 809.6666666666666
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/level_cutscenetest.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 437.5,
+                "y": 224.5
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/level_test.tmx": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 515.5,
+                "y": 202.5
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/level_tutorial.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 962,
+                "y": 859.3333333333334
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/level_tutorial_alt.tmx": {
+            "scale": 1,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 726,
+                "y": 392
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/CRIKEYMAS_2019/ASSETS/CRIKEYMAS_MAP/test_weapon.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 403.66666666666663,
+                "y": 389.66666666666663
+            }
+        },
+        "D:/DEV/CODE/gamemaker/PROJECTS/SIMSIN/MAP/rm_test.tmx": {
+            "scale": 1,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 836,
+                "y": 621.5
+            }
+        },
+        "objects.tsx": {
+            "scaleInDock": 1
+        },
+        "rm_debug.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 624,
+                "y": 628.6666666666666
+            }
+        },
+        "rm_down1.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 876,
+                "y": 405.33333333333337
+            }
+        },
+        "rm_down_jump.tmx": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 593,
+                "y": 517
+            }
+        },
+        "rm_down_powercell.tmx": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 300,
+                "y": 216.5
+            }
+        },
+        "rm_down_weapon.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 356.66666666666663,
+                "y": 316.6666666666667
+            }
+        },
+        "rm_hub.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 471.3333333333333,
+                "y": 232.33333333333331
+            }
+        },
+        "rm_side_lobby.tmx": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 733,
+                "y": 327.5
+            }
+        },
+        "rm_side_sprint.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 723.3333333333333,
+                "y": 292.3333333333333
+            }
+        },
+        "rm_up_house_1.tmx": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 636,
+                "y": 376.5
+            }
+        },
+        "rm_up_kick.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 312.6666666666667,
+                "y": 231.66666666666666
+            }
+        },
+        "rm_up_lobby.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 449.3333333333333,
+                "y": 977
+            }
+        },
+        "tiles.tsx": {
+            "scaleInDock": 1
+        }
+    },
+    "map.fixedSize": true,
+    "map.height": 16,
+    "map.lastUsedExportFilter": "GameMaker room files (*.room.gmx)",
+    "map.layerDataFormat": 3,
+    "map.orientation": 1,
+    "map.tileHeight": 32,
+    "map.tileWidth": 32,
+    "map.width": 20,
+    "openFiles": [
+        "rm_up_kick.tmx"
+    ],
+    "project": "JOTTEL.tiled-project",
+    "property.type": "int",
+    "recentFiles": [
+        "rm_up_kick.tmx"
+    ],
+    "resizeMap.removeObjects": false,
+    "tileset.embedInMap": false,
+    "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
+    "tileset.margin": 0,
+    "tileset.spacing": 0,
+    "tileset.tileSize": {
+        "height": 32,
+        "width": 32
+    },
+    "tileset.transparentColor": "#ff00ff",
+    "tileset.type": 1,
+    "tileset.useTransparentColor": false
+}

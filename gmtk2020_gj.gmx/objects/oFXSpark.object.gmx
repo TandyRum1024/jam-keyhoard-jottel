@@ -50,6 +50,17 @@
             <kind>1</kind>
             <string>/// Update colour
 image_blend = make_color_hsv(random_range(0, 255), random_range(0, 80), random_range(128, 255));
+
+// Check for paused
+if (global.isPhysicsPaused)
+{
+    image_speed = 0;
+    exit;
+}
+else
+{
+    image_speed = 0.5;
+}
 </string>
           </argument>
         </arguments>

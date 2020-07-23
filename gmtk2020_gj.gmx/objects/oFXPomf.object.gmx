@@ -26,6 +26,8 @@
           <argument>
             <kind>1</kind>
             <string>image_speed = 0.5;
+vx = 0;
+vy = 0;
 </string>
           </argument>
         </arguments>
@@ -48,8 +50,23 @@
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>/// Update colour
-image_blend = make_color_hsv(random_range(0, 255), random_range(0, 80), random_range(128, 255));
+            <string>/// Update colour &amp; position
+var _interp = image_index / (image_number - 1.0);
+image_blend = make_color_hsv(random_range(0, 255), random_range(0, 80) + _interp * 80, random_range(128, 255) - _interp * 128);
+
+// Check for paused
+if (global.isPhysicsPaused)
+{
+    image_speed = 0;
+    exit;
+}
+else
+{
+    image_speed = 0.5;
+}
+
+x += vx;
+y += vy;
 </string>
           </argument>
         </arguments>

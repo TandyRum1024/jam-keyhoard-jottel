@@ -146,6 +146,9 @@ if (!fsmStateInit)
         var _y = random_range(bbox_top, bbox_bottom);
         fx_emit_dust(_x, _y, random_range(-4, 4), random_range(-4, 4), 0.95, room_speed);
     }
+    
+    // Shake camera
+    fx_camera_shake_add(8);
 }
 
 /// Check stun end

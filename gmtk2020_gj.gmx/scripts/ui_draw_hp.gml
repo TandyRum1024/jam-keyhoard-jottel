@@ -3,7 +3,14 @@ if (instance_exists(oPlayer))
     var _hpinterp = clamp(oPlayer.hp / oPlayer.hpMax, 0, 1);
     var _hpstr      = "HP : " + string(oPlayer.hp) + " / " + string(oPlayer.hpMax);
     var _hpcolour   = c_white;
-    var _hpscale    = 4;
+    var _hpscale    = 4 * global.gameUIZoom;
+    
+    // check if player's HP is depleted
+    if (oPlayer.hp <= 0)
+    {
+        _hpstr = "X_X";
+        _hpcolour = c_gray;
+    }
     
     var _hpbarmaxwid    = global.winWid * 0.4;
     var _hpbarwid       = sprite_get_width(sprUIHealth) * _hpscale;

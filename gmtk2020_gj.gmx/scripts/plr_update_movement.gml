@@ -48,6 +48,12 @@ if (upgradeMove)
     else
     {
         isMoving = false;
+        
+        // if velocity is small enough, then trim it to zero
+        if (abs(vx) < 0.005)
+            vx = 0;
+        if (abs(vy) < 0.005)
+            vy = 0;
     }
     
     // Fall down faster by holding down

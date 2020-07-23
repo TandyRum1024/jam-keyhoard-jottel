@@ -16,9 +16,13 @@
       <sound>sound\sndWeaponShoot</sound>
       <sound>sound\sndYes</sound>
       <sound>sound\sndNo</sound>
+      <sound>sound\sndSelect</sound>
+      <sound>sound\sndPrompt</sound>
       <sound>sound\sndHurt</sound>
       <sound>sound\sndDead</sound>
       <sound>sound\sndFleshImpact</sound>
+      <sound>sound\sndHeavyImpact</sound>
+      <sound>sound\sndWallImpact</sound>
       <sound>sound\sndCrawl</sound>
     </sounds>
     <sound>sound\musIngame</sound>
@@ -86,31 +90,44 @@
     </scripts>
     <scripts name="Control">
       <script>scripts\knt_state_normal.gml</script>
+      <script>scripts\knt_transition.gml</script>
     </scripts>
     <scripts name="Animation">
       <script>scripts\interp_weight.gml</script>
       <script>scripts\anim_init.gml</script>
     </scripts>
     <scripts name="UI">
+      <scripts name="screen_elements">
+        <script>scripts\ui_draw_item_info.gml</script>
+        <script>scripts\ui_draw_message.gml</script>
+        <script>scripts\ui_draw_hp.gml</script>
+        <script>scripts\ui_draw_footer.gml</script>
+      </scripts>
+      <scripts name="rudiments">
+        <script>scripts\ui_draw_text.gml</script>
+        <script>scripts\ui_draw_text_format.gml</script>
+        <script>scripts\ui_draw_rect.gml</script>
+        <script>scripts\ui_draw_rect_text.gml</script>
+      </scripts>
       <script>scripts\ui_show_message.gml</script>
-      <script>scripts\ui_draw_item_info.gml</script>
-      <script>scripts\ui_draw_message.gml</script>
-      <script>scripts\ui_draw_text.gml</script>
-      <script>scripts\ui_draw_rect.gml</script>
-      <script>scripts\ui_draw_hp.gml</script>
       <script>scripts\ui_ingame.gml</script>
     </scripts>
+    <script>scripts\fx_camera_shake.gml</script>
     <script>scripts\fx_emit_dust.gml</script>
     <script>scripts\sfx_init.gml</script>
     <script>scripts\fsm_init.gml</script>
     <script>scripts\debug_log.gml</script>
     <script>scripts\makearray.gml</script>
+    <script>scripts\string_escape_newline.gml</script>
+    <script>scripts\string_trim_whitespace.gml</script>
     <script>scripts\singleton_update.gml</script>
+    <script>scripts\input_check_gamepad_anybutton.gml</script>
     <script>scripts\inv_key_add.gml</script>
     <script>scripts\roomevents_add.gml</script>
   </scripts>
   <shaders name="shaders">
     <shader type="GLSLES">shaders\shd_postprocessing.shader</shader>
+    <shader type="GLSLES">shaders\shd_postprocessing_camscreen.shader</shader>
   </shaders>
   <fonts name="fonts">
     <font>fonts\fntGame</font>
@@ -123,6 +140,7 @@
       <object>objects\oAnim</object>
       <object>objects\oRoom</object>
       <object>objects\oGamevars</object>
+      <object>objects\oInput</object>
     </objects>
     <objects name="ingame">
       <objects name="Pickups">

@@ -20,6 +20,16 @@ if (_mus != global.musicMusic)
     if (audio_is_playing(global.musicSoundIndex))
         audio_stop_sound(global.musicSoundIndex);
     global.musicSoundIndex = audio_play_sound(_mus, 0, true);
+    global.musicMusic = _mus;
     audio_sound_gain(global.musicSoundIndex, 0, 0);
     audio_sound_gain(global.musicSoundIndex, global.musicVolume, _fadeintime);
 }
+else
+{
+    audio_sound_gain(global.musicSoundIndex, global.musicVolume, _fadeintime);
+}
+
+#define music_update_volume
+/// music_update_volume(_fadeintime)
+var _fadeintime = argument0;
+audio_sound_gain(global.musicSoundIndex, global.musicVolume, _fadeintime);

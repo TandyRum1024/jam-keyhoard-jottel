@@ -54,7 +54,13 @@ lifeFade = 15;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>x += vx;
+            <string>image_blend = make_color_hsv(random_range(0, 255), random_range(0, 80), random_range(128, 255));
+
+// Check for paused
+if (global.isPhysicsPaused)
+    exit;
+
+x += vx;
 y += vy;
 vx *= velDamp;
 vy *= velDamp;
@@ -66,7 +72,6 @@ else
 
 var _interp = clamp(life / lifeFade, 0, 1);
 image_alpha = _interp;
-image_blend = make_color_hsv(random_range(0, 255), random_range(0, 80), random_range(128, 255));
 
 </string>
           </argument>

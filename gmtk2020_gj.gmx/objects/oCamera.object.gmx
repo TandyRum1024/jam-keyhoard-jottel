@@ -115,16 +115,41 @@ vx *= velDamp;
 vy *= velDamp;
 
 FXShake *= FXShakeDamp;
+if (FXShake &lt; 0.5)
+    FXShake = 0;
 
 /// Set view
 var _gamew = global.gameWid;
 var _gameh = global.gameHei;
 view_wview[view_current] = _gamew;
 view_hview[view_current] = _gameh;
+view_wport[view_current] = global.winWid;
+view_hport[view_current] = global.winHei;
 
-// Clamp camera's position to current room's bounds
-view_xview[view_current] = floor(median(0, x - _gamew * 0.5, room_width - _gamew) + random_range(-FXShake, FXShake));
-view_yview[view_current] = floor(median(0, y - _gameh * 0.5, room_height - _gameh) + random_range(-FXShake, FXShake));
+// Make the camera position centered at the room if camera's wider/taller than the room
+// Otherwise, clamp camera's position to current room's bounds
+var _viewoverflowmargin = 16;
+if (_gamew &gt;= room_width)
+{
+    var _viewfollowx    = (x / room_width) * 2.0 - 1.0;
+    var _viewbasex      = (room_width - _gamew) * 0.5;
+    view_xview[view_current] = floor(_viewbasex + _viewfollowx * _viewoverflowmargin + random_range(-FXShake, FXShake));
+}
+else
+{
+    view_xview[view_current] = floor(median(0, x - _gamew * 0.5, room_width - _gamew) + random_range(-FXShake, FXShake));
+}
+    
+if (_gameh &gt;= room_height)
+{
+    var _viewfollowy    = (y / room_height) * 2.0 - 1.0;
+    var _viewbasey      = (room_height - _gameh) * 0.5;
+    view_yview[view_current] = floor(_viewbasey + _viewfollowy * _viewoverflowmargin + random_range(-FXShake, FXShake));
+}
+else
+{
+    view_yview[view_current] = floor(median(0, y - _gameh * 0.5, room_height - _gameh) + random_range(-FXShake, FXShake));
+}
 
 view_angle[view_current] = r;
 

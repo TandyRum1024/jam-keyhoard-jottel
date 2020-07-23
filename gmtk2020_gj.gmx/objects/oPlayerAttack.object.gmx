@@ -59,6 +59,11 @@ dead = false;
           <argument>
             <kind>1</kind>
             <string>/// Update projectile
+
+// Check for paused
+if (global.isPhysicsPaused)
+    exit;
+
 if (!dead)
 {
     x += vx;

@@ -1,5 +1,11 @@
 #define plr_state_normal
 /// Player normal state
+if (!fsmStateInit)
+{
+    // Fire anim
+    anim_fire("idle");
+}
+
 /// Update input
 plr_update_input();
 
@@ -34,7 +40,10 @@ plr_update_damage();
 if (!fsmStateInit)
 {
     // Fire anim
-    anim_fire("midair_crawl");
+    anim_fire("spawn_fall");
+    
+    // Fix the player direction
+    moveFacing = 1;
 }
 
 /// Update physics
@@ -58,6 +67,9 @@ if (!isMoving)
 if (contactB)
 {
     fsm_set("default");
+    
+    // Also shake camera
+    fx_camera_shake(32);
 }
 
 #define plr_state_interact
@@ -149,7 +161,7 @@ else if (fsmStateCtr > kickDashFrames) // Check if dash duration has ended
 
 #define plr_state_kick
 /// Player kicking state
-if (fsmStateInit)
+if (!fsmStateInit)
 {
     // Set gravity
     velGravAcc = velGravAccJump;
@@ -205,7 +217,7 @@ if (fsmStateNext != fsmState)
 
 #define plr_state_kick_down
 /// Player downwards kick state
-if (fsmStateInit)
+if (!fsmStateInit)
 {
     // Fire anim
     anim_fire("kick_down");
@@ -259,7 +271,7 @@ if (contactB) // If player has landed -> go to kick knockback state
 
 #define plr_state_kick_knockback
 /// Player kick knockback / stun state
-if (fsmStateInit)
+if (!fsmStateInit)
 {
     // Set gravity
     velGravAcc = velGravAccKick;
@@ -316,7 +328,7 @@ if (fsmStateNext != fsmState)
 
 #define plr_state_hurt
 /// Player hurt knockback / stun state
-if (fsmStateInit)
+if (!fsmStateInit)
 {
     // Instantly face the opposite of knockback direction
     if (sign(vx) != 0)
@@ -332,6 +344,9 @@ if (fsmStateInit)
         var _y = random_range(bbox_top, bbox_bottom);
         fx_emit_dust(_x, _y, random_range(-4, 4), random_range(-4, 4), 0.95, room_speed);
     }
+    
+    // Shake camera
+    fx_camera_shake_add(16);
 }
 
 /// Update input
@@ -375,7 +390,7 @@ if (fsmStateCtr > hurtFrames) // If stun duration has ended -> go to normal stat
 
 #define plr_state_dead
 /// Player hurt knockback / stun state
-if (fsmStateInit)
+if (!fsmStateInit)
 {
     // Instantly face the opposite of knockback direction
     if (sign(vx) != 0)
@@ -383,6 +398,9 @@ if (fsmStateInit)
         
     // Fire anim
     anim_fire("dead");
+    
+    // Shake camera
+    fx_camera_shake_add(32);
 }
 
 /// Update physics

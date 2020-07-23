@@ -46,3 +46,7 @@ if (fsmStateScript != undefined)
 /// Update state init flag & state counter
 fsmStateInit = true;
 fsmStateCtr++;
+
+#define fsm_destroy
+if (ds_exists(fsmMap, ds_type_map))
+    ds_map_destroy(fsmMap);

@@ -6,19 +6,19 @@ var _itemstrx       = _basex + 16;
 var _itembasey      = _basey;
 
 // var _itemiconspr    = oGamevars.itemIcon[@ _itemtype];
-var _itemiconscale  = 4;
+var _itemiconscale  = 4 * global.gameUIZoom;
 var _itemiconwid    = sprite_get_width(sprPickup) * _itemiconscale;
 var _itemiconhei    = sprite_get_height(sprPickup) * _itemiconscale;
 var _itemiconx      = _basex - 16 - _itemiconwid + sprite_get_xoffset(sprPickup) * _itemiconscale;
 var _itemicony      = _itembasey + sprite_get_yoffset(sprPickup) * _itemiconscale;
 
 var _itemtitlestr   = string(_iteminfo[@ 0]);
-var _itemtitlescale = 2;
+var _itemtitlescale = 2 * global.gameUIZoom;
 var _itemtitlehei   = string_height(_itemtitlestr) * _itemtitlescale;
 var _itemstrtitley  = _itembasey;
 
 var _itemdescstr    = string(_iteminfo[@ 2]);
-var _itemdescscale  = 2;
+var _itemdescscale  = 2 * global.gameUIZoom;
 var _itemstrdescy   = _itembasey + _itemtitlehei + 8;
 
 var _strwid = global.winWid - (_basex + 32);

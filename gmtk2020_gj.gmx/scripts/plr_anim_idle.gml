@@ -40,6 +40,55 @@ else if (abs(owner.vx) >= oGamevars.animPlrMoveVelMin) // Move
         fsm_set("move_crawl");
 }
 
+#define plr_anim_spawn_fall
+if (!fsmStateInit)
+{
+    // Reset the animation
+    event_user(0);
+    
+    // Set sprite
+    owner.sprite_index = sprPlayerHurt;
+    
+    // Animate sprite animation
+    owner.image_index = 1;
+    owner.image_speed = 0;
+    
+    // Flip sprite y to make the player 'fall on head'
+    image_angle = 270;
+}
+
+/// Animate movements
+// Tilt sprite according to velocity
+image_angle -= angle_difference(image_angle, point_direction(0, 0, owner.vx, owner.vy)) * 0.1;
+
+// Set shake
+animFXShake = 4;
+
+if (owner.colB)
+{
+    // Play sound
+    sfx_play(sndWallImpact, 0.75, random_range(0.9, 1.1));
+    sfx_play(sndHeavyImpact, 0.5, random_range(0.9, 1.1));
+    
+    // Emit some dust & particles
+    with (owner)
+    {
+        var _particle = fx_emit_pomf(random_range(bbox_left, bbox_right), bbox_bottom);
+        _particle.vx = sign(_particle.x - x);
+        _particle.vy = random_range(-0.5, 2);
+        
+        var _movedir = sign(vx);
+        // debug_log("VX : ", vx, " | MOVEDIR : ", _movedir);
+        repeat (irandom_range(4, 8))
+        {
+            if (_movedir != 0)
+                fx_emit_dust(lerp(bbox_left, bbox_right, _movedir * 0.5 + 0.5), bbox_bottom - vy, _movedir * random_range(-3, -1), random_range(-1, -0.25), 0.95, room_speed);
+            else
+                fx_emit_dust(lerp(bbox_left, bbox_right, random_range(-0.1, 0.1) + 0.5), bbox_bottom - vy, random_range(-1, 1), random_range(-1, -0.1), 0.95, room_speed);
+        }
+    }
+}
+
 #define plr_anim_move
 if (!fsmStateInit)
 {
@@ -225,7 +274,31 @@ else
         {
             fsm_set("move_crawl");
         }
-        sfx_play(sndFleshImpact, 0.75, random_range(0.9, 1.1));
+        
+        // Play sound
+        sfx_play(sndWallImpact, 0.75, random_range(0.9, 1.1));
+        sfx_play(sndHeavyImpact, 0.5, random_range(0.9, 1.1));
+        
+        // Shake camera
+        fx_camera_shake(8);
+        
+        // Emit some dust & particles
+        with (owner)
+        {
+            var _particle = fx_emit_pomf(random_range(bbox_left, bbox_right), bbox_bottom);
+            _particle.vx = sign(_particle.x - x);
+            _particle.vy = random_range(-0.5, 2);
+            
+            var _movedir = sign(vx);
+            // debug_log("VX : ", vx, " | MOVEDIR : ", _movedir);
+            repeat (irandom_range(4, 8))
+            {
+                if (_movedir != 0)
+                    fx_emit_dust(lerp(bbox_left, bbox_right, _movedir * 0.5 + 0.5), bbox_bottom - vy, _movedir * random_range(-3, -1), random_range(-1, -0.25), 0.95, room_speed);
+                else
+                    fx_emit_dust(lerp(bbox_left, bbox_right, random_range(-0.1, 0.1) + 0.5), bbox_bottom - vy, random_range(-1, 1), random_range(-1, -0.1), 0.95, room_speed);
+            }
+        }
     }
 }
 
@@ -241,6 +314,20 @@ if (!fsmStateInit)
     
     // Play sound
     sfx_play(sndFootstepJump, 1.0, random_range(0.9, 1.1));
+    
+    // Emit particle
+    with (owner)
+    {
+        var _movedir = sign(vx);
+        // debug_log("VX : ", vx, " | MOVEDIR : ", _movedir);
+        repeat (irandom_range(8, 16))
+        {
+            if (_movedir != 0)
+                fx_emit_dust(lerp(bbox_left, bbox_right, _movedir * 0.5 + 0.5), bbox_bottom - vy, _movedir * random_range(-3, -1), random_range(-1, -0.25), 0.95, room_speed);
+            else
+                fx_emit_dust(lerp(bbox_left, bbox_right, random_range(-0.1, 0.1) + 0.5), bbox_bottom - vy, random_range(-1, 1), random_range(-1, -0.1), 0.95, room_speed);
+        }
+    }
 }
 
 var _ownervel = 0;
@@ -275,7 +362,9 @@ if (owner.contactB) // Landed : Switch to idle / move
     // emit some dust
     with (owner)
     {
-        fx_emit_pomf(random_range(bbox_left, bbox_right), bbox_bottom);
+        var _particle = fx_emit_pomf(random_range(bbox_left, bbox_right), bbox_bottom);
+        _particle.vx = sign(_particle.x - x);
+        _particle.vy = random_range(-0.5, 2);
     }
 }
 else if (sign(owner.vy) > 0) // Falling : switch to midair state
@@ -334,11 +423,14 @@ else if (owner.contactB) // Landed : Switch to idle / move
     
     // Play sound
     sfx_play(sndFootstepLand, 0.75, random_range(0.9, 1.1));
+    sfx_play(sndHeavyImpact, 0.5, random_range(0.9, 1.1));
     
     // emit some dust
     with (owner)
     {
-        fx_emit_pomf(random_range(bbox_left, bbox_right), bbox_bottom);
+        var _particle = fx_emit_pomf(random_range(bbox_left, bbox_right), bbox_bottom);
+        _particle.vx = sign(_particle.x - x);
+        _particle.vy = random_range(-0.5, 2);
     }
 }
 
@@ -354,7 +446,7 @@ if (!fsmStateInit)
     owner.image_speed = 0;
     
     // Play sound
-    sfx_play(sndYes, 1.0, random_range(0.9, 1.1));
+    // sfx_play(sndYes, 1.0, random_range(0.9, 1.1));
 }
 
 /// Check for state switches
@@ -472,6 +564,16 @@ if (!fsmStateInit)
     
     // Play sound
     sfx_play(sndKickHit, 1.0, random_range(0.9, 1.1));
+    sfx_play(sndWallImpact, 1.0, random_range(0.9, 1.1));
+    
+    // Emit particle
+    with (owner)
+    {
+        repeat (irandom_range(8, 16))
+        {
+            fx_emit_dust(lerp(bbox_left, bbox_right, moveFacing * 0.5 + 0.5), y, moveFacing * random_range(-3, -1), random_range(-2, 2), 0.95, room_speed);
+        }
+    }
 }
 
 // Apply shake
@@ -512,27 +614,40 @@ if (!fsmStateInit)
     owner.image_speed = 0;
     
     // Play sound
-    sfx_play(sndHurt, 1.0, random_range(0.9, 1.1));
+    if (owner.hp > 0)
+    {
+        sfx_play(sndHurt, 0.75, random_range(0.9, 1.1));
+        sfx_play(sndFleshImpact, 1.0, random_range(0.9, 1.1));
+    }
 }
 
 /// Update sprite
-if (owner.contactB)
+if (fsmStateCtr < owner.hurtStunFrames) // show knockback sprite for first few frames
 {
-    // Set sprite
+    // Set sprite & frame
     owner.sprite_index = sprPlayerHurt;
-    
-    // Animate sprite animation
     owner.image_index = 0;
-    image_angle = 0;
 }
-else
+else // show state-dependant hurt sprite afterwards
 {
-    // Set sprite
-    owner.sprite_index = sprPlayerHurt;
-    
-    // Animate sprite animation
-    owner.image_index = 1;
-    image_angle -= angle_difference(image_angle, point_direction(0, 0, owner.vx, owner.vy)) * 0.5;
+    if (owner.contactB)
+    {
+        // Set sprite & frame
+        owner.sprite_index = sprPlayerHurt;
+        owner.image_index = 0;
+        
+        // Fix sprite angle to 0
+        image_angle = 0;
+    }
+    else
+    {
+        // Set sprite & frame
+        owner.sprite_index = sprPlayerHurt;
+        owner.image_index = 1;
+        
+        // Update sprite angle to follow the movement
+        image_angle -= angle_difference(image_angle, point_direction(0, 0, owner.vx, owner.vy)) * 0.5;
+    }
 }
 
 // Apply shake
@@ -563,6 +678,7 @@ if (!fsmStateInit)
     
     // Play sound
     sfx_play(sndDead, 1.0, random_range(0.9, 1.1));
+    sfx_play(sndFleshImpact, 1.0, random_range(0.9, 1.1));
 }
 
 /// Update sprite
@@ -572,8 +688,15 @@ if (owner.contactB)
     owner.sprite_index = sprPlayerHurt;
     
     // Animate sprite animation
-    owner.image_index = 2;
-    image_angle = 0;
+    if (owner.image_index != 2)
+    {
+        owner.image_index = 2;
+        image_angle = 0;
+        
+        // Play sound
+        sfx_play(sndWallImpact, 0.75, random_range(0.9, 1.1));
+        sfx_play(sndHeavyImpact, 0.5, random_range(0.9, 1.1));
+    }
 }
 else
 {

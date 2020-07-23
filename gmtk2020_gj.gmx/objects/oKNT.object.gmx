@@ -74,25 +74,44 @@ if (!singleton_update())
             <string>/// decl vars
 debug_log("oKNT &gt; DECL VARS...");
 
+/// Debugs
+global.debugSkipIntro = true;
+global.debugForceDisablePostprocess = false;
+global.debugBuildStr = "KEYHRDJTL POST-JAM STABILITY BUILD v" + GM_version + " [" + date_date_string(GM_build_date) + "|" + date_time_string(GM_build_date) + "]";
+
 /// FSM
 fsm_init();
 fsm_add_state("default", knt_state_normal);
+// system
 fsm_add_state("init", knt_state_init);
+fsm_add_state("transition", knt_state_transition);
+// cutscene screens
+fsm_add_state("no_filter_warning", knt_state_nofilter_warn);
 fsm_add_state("title", knt_state_title);
 fsm_add_state("intro", knt_state_intro);
 fsm_add_state("ending", knt_state_ending);
+// menus
 fsm_add_state("item_get", knt_state_item_get);
 fsm_add_state("item_assign", knt_state_item_assign);
-fsm_add_state("hub_respawn", knt_state_hub_respawn);
 fsm_add_state("objective_powercell_deposit", knt_state_powercell_deposit);
 fsm_add_state("teleport_select", knt_state_teleport_select);
+// rooms
+fsm_add_state("hub_respawn", knt_state_hub_respawn);
 fsm_add_state("teleport", knt_state_teleport);
 fsm_add_state("room_move", knt_state_room_move);
 fsm_add_state("room_enter", knt_state_room_enter);
+// paused
+fsm_add_state("paused_main", knt_state_paused);
+fsm_add_state("paused_settings", knt_state_paused_settings);
+fsm_add_state("paused_respawn", knt_state_paused_respawn);
+fsm_add_state("paused_exit", knt_state_paused_exit);
 fsm_set("init");
 
 /// Required objects
 event_user(0);
+
+/// Format system
+ui_draw_text_format_init();
 
 /// Set font
 draw_set_font(fntGame);
@@ -117,32 +136,21 @@ draw_set_font(fntGame);
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>/// SFX
-sfx_init();
+            <string>/// Resolutions
+/// Game resolution
+global.gameZoom = 2.0;
+global.gameUIZoom = 1.0;
 
-</string>
-          </argument>
-        </arguments>
-      </action>
-      <action>
-        <libid>1</libid>
-        <id>603</id>
-        <kind>7</kind>
-        <userelative>0</userelative>
-        <isquestion>0</isquestion>
-        <useapplyto>-1</useapplyto>
-        <exetype>2</exetype>
-        <functionname></functionname>
-        <codestring></codestring>
-        <whoName>self</whoName>
-        <relative>0</relative>
-        <isnot>0</isnot>
-        <arguments>
-          <argument>
-            <kind>1</kind>
-            <string>/// Game resolution
 global.gameWid = 400;
 global.gameHei = 300;
+global.gameTargetWid = 512;
+global.gameTargetHei = 384;
+
+/// Window resolution
+global.winWid = window_get_width();
+global.winHei = window_get_height();
+global.winCenterX = global.winWid * 0.5;
+global.winCenterY = global.winHei * 0.5;
 
 </string>
           </argument>
@@ -165,8 +173,9 @@ global.gameHei = 300;
           <argument>
             <kind>1</kind>
             <string>/// Game visual
+global.postprocessSupport = false;
 global.postprocess = true;
-global.surfPostprocess = surface_create(window_get_width(), window_get_height());
+global.surfScreen = surface_create(window_get_width(), window_get_height());
 
 </string>
           </argument>
@@ -188,7 +197,39 @@ global.surfPostprocess = surface_create(window_get_width(), window_get_height())
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>/// state revelant vars
+            <string>/// Transition API
+transitionIsHappening   = false;
+transitionIsFadeout     = true;
+transitionDest = "default";
+
+transitionCtr = 0;
+transitionTime = room_speed * 0.25;
+transitionTimeDefault = room_speed * 0.2;
+
+</string>
+          </argument>
+        </arguments>
+      </action>
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>/// Ingame vars
+/// Game physics &amp; stuffs
+global.isPhysicsPaused = false;
+
 /// Intro cutscene state
 introCutsceneIdx = 0;
 introCutsceneWaitFrames = 30;
@@ -230,6 +271,40 @@ ingameTeleportDest = rm_hub;
         </arguments>
       </action>
     </event>
+    <event eventtype="1" enumb="0">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>/// Free allocated memories
+if (objectInitialized)
+{
+    /// Surfaces
+    surface_free(global.surfScreen);
+    
+    /// FSM
+    fsm_destroy();
+    
+    /// Format system
+    ui_draw_text_format_init();
+}
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
     <event eventtype="3" enumb="2">
       <action>
         <libid>1</libid>
@@ -248,12 +323,15 @@ ingameTeleportDest = rm_hub;
           <argument>
             <kind>1</kind>
             <string>/// update postprocess surface
-if ((!surface_exists(global.surfPostprocess) || (surface_get_width(global.surfPostprocess) != window_get_width() || surface_get_height(global.surfPostprocess) != window_get_height())) &amp;&amp;
+if ((!surface_exists(global.surfScreen) || (surface_get_width(global.surfScreen) != window_get_width() || surface_get_height(global.surfScreen) != window_get_height())) &amp;&amp;
     (window_get_width() != 0 &amp;&amp; window_get_height() != 0))
 {
-    if (surface_exists(global.surfPostprocess))
-        surface_free(global.surfPostprocess);
-    global.surfPostprocess = surface_create(window_get_width(), window_get_height());
+    // destroy pre-existing surface
+    if (surface_exists(global.surfScreen))
+        surface_free(global.surfScreen);
+        
+    // make a new one
+    global.surfScreen = surface_create(window_get_width(), window_get_height());
 }
 </string>
           </argument>
@@ -279,6 +357,137 @@ if ((!surface_exists(global.surfPostprocess) || (surface_get_width(global.surfPo
             <kind>1</kind>
             <string>/// Update FSM
 fsm_update();
+
+</string>
+          </argument>
+        </arguments>
+      </action>
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>/// Update transition
+if (transitionIsHappening)
+{
+    if (transitionIsFadeout)
+    {
+        // If enough frames has elapsed, switch to fadeout &amp; set state to destination state
+        if (transitionCtr &gt; transitionTime)
+        {
+            transitionCtr = 0;
+            transitionIsFadeout = false;
+            fsm_set(transitionDest);
+        }
+        else
+        {
+            transitionCtr++;
+        }
+    }
+    else
+    {
+        // If enough frames has elapsed, stop transitioning
+        if (transitionCtr &gt; transitionTime)
+        {
+            transitionCtr = 0;
+            transitionIsHappening = false;
+        }
+        else
+        {
+            transitionCtr++;
+        }
+    }
+}
+
+</string>
+          </argument>
+        </arguments>
+      </action>
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>/// Update debugs
+/// Toggle post-processing by pressing F1
+if (global.postprocessSupport)
+    global.postprocess ^= keyboard_check_pressed(vk_f1);
+else
+    global.postprocess = false;
+
+</string>
+          </argument>
+        </arguments>
+      </action>
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>/// Update resolutions
+var _currentwid = window_get_width();
+var _currenthei = window_get_height();
+
+// Update the closest zoom
+var _minratio   = min(_currentwid / global.gameTargetWid, _currenthei / global.gameTargetHei);
+global.gameZoom = max(min(round(_currentwid / global.gameTargetWid), round(_currenthei / global.gameTargetHei)), 2.0);
+global.gameUIZoom = 0.5 * _minratio;
+
+// Update the scaled zoom
+var _scalewid = floor(_currentwid / global.gameZoom);
+var _scalehei = floor(_currenthei / global.gameZoom);
+
+
+if ((_currentwid != global.winWid || _currenthei != global.winHei) &amp;&amp;
+    (_currentwid != 0 &amp;&amp; _currenthei != 0))
+{
+    // Update window resolution
+    global.winWid = floor(_currentwid);
+    global.winHei = floor(_currenthei);
+    global.winCenterX = floor(global.winWid * 0.5);
+    global.winCenterY = floor(global.winHei * 0.5);
+
+    // Update game resolution
+    global.gameWid = _scalewid;
+    global.gameHei = _scalehei;
+    
+    // Resize the application surface
+    surface_resize(application_surface, _currentwid, _currenthei);
+    display_set_gui_size(_currentwid, _currenthei);
+}
 </string>
           </argument>
         </arguments>
@@ -307,6 +516,9 @@ if (!instance_exists(oGamevars))
     
 if (!instance_exists(oUI))
     instance_create(0, 0, oUI);
+    
+if (!instance_exists(oInput))
+    instance_create(0, 0, oInput);
 
 if (!instance_exists(oCamera))
 {
@@ -342,11 +554,13 @@ if (!instance_exists(oCamera))
           <argument>
             <kind>1</kind>
             <string>/// Transfer application surface's contents to postprocessing surface
-surface_set_target(global.surfPostprocess);
+surface_set_target(global.surfScreen);
 // clear
 draw_clear_alpha(c_black, 1.0);
-draw_surface_stretched(application_surface, 0, 0, surface_get_width(global.surfPostprocess), surface_get_height(global.surfPostprocess));
+draw_surface_stretched(application_surface, 0, 0, surface_get_width(global.surfScreen), surface_get_height(global.surfScreen));
+
 surface_reset_target();
+
 </string>
           </argument>
         </arguments>
@@ -370,45 +584,246 @@ surface_reset_target();
           <argument>
             <kind>1</kind>
             <string>/// End catching the GUI draws and draw the postprocessing surface
-
+// end catching
 surface_reset_target();
+
+// Begin drawing the postprocessing surface
+var _winw = window_get_width();
+var _winh = window_get_height();
 
 if (global.postprocess)
 {
     /// draw with filters applied
-    // Filter : create temp. downscale / blur surface
-    var _surfw = surface_get_width(global.surfPostprocess);
-    var _surfh = surface_get_height(global.surfPostprocess);
-    var _smallsurf = surface_create(_surfw * 0.1, _surfh * 0.1);
-    texture_set_interpolation(true);
-    surface_set_target(_smallsurf);
-    draw_clear_alpha(0, 0);
-    draw_surface_stretched(global.surfPostprocess, 0, 0, surface_get_width(_smallsurf), surface_get_height(_smallsurf));
-    surface_reset_target();
+    // background
+    draw_clear(0);
+    
+    var _surfw = surface_get_width(global.surfScreen);
+    var _surfh = surface_get_height(global.surfScreen);
     
     var _noise      = sprite_get_texture(texBluenoise, 0);
     var _rainbow    = sprite_get_texture(texRainbowTable, 0);
     
-    shader_set(shd_postprocessing);
-    texture_set_stage(shader_get_sampler_index(shd_postprocessing, "uTexDownscaledScreen"), surface_get_texture(_smallsurf));
-    texture_set_stage(shader_get_sampler_index(shd_postprocessing, "uTexBluenoise"), _noise);
-    texture_set_stage(shader_get_sampler_index(shd_postprocessing, "uTexRainbow"), _rainbow);
-    shader_set_uniform_f(shader_get_uniform(shd_postprocessing, "uTime"), current_time * 0.001);
-    shader_set_uniform_f(shader_get_uniform(shd_postprocessing, "uScreenTexelSize"), 1 / _surfw, 1 / _surfh);
-    shader_set_uniform_f(shader_get_uniform(shd_postprocessing, "uBluenoiseTexelSize"), texture_get_texel_width(_noise), texture_get_texel_height(_noise));
-    draw_surface_stretched(global.surfPostprocess, 0, 0, window_get_width(), window_get_height());
+    // CRT filter : make temp. surface to hold the resulting CRT'd screen
+    texture_set_interpolation(true);
+    var _crtsurf = surface_create(_surfw, _surfh);
+    /*
+    surface_set_target(_crtsurf);
+    shader_set(shd_postprocessing_camscreen);
+        texture_set_stage(shader_get_sampler_index(shd_postprocessing_camscreen, "uTexNoise"), _noise);
+        
+        draw_clear_alpha(0, 0);
+        draw_surface_stretched(global.surfScreen, 0, 0, surface_get_width(_smallsurf), surface_get_height(_smallsurf));
     shader_reset();
+    surface_reset_target();
+    */
+    shader_set(shd_postprocessing);
+        // texture_set_stage(shader_get_sampler_index(shd_postprocessing, "uTexDownscaledScreen"), surface_get_texture(_smallsurf));
+        texture_set_stage(shader_get_sampler_index(shd_postprocessing, "uTexBluenoise"), _noise);
+        texture_set_stage(shader_get_sampler_index(shd_postprocessing, "uTexRainbow"), _rainbow);
+        shader_set_uniform_f(shader_get_uniform(shd_postprocessing, "uTime"), current_time * 0.001);
+        shader_set_uniform_f(shader_get_uniform(shd_postprocessing, "uScreenTexelSize"), 1 / _surfw, 1 / _surfh);
+        shader_set_uniform_f(shader_get_uniform(shd_postprocessing, "uBluenoiseTexelSize"), texture_get_texel_width(_noise), texture_get_texel_height(_noise));
+        
+        // animate transition
+        if (transitionIsHappening)
+        {
+            if (transitionIsFadeout)
+            {
+                var _screensqueezeamp = 0.8;
+                var _transitioninterp = interp_weight(transitionCtr, transitionTime, 2.0, 1.5);
+                // _transitioninterp = 1.0 - _transitioninterp;
+                var _screenwid  = _winw * (1.0 + _transitioninterp * _screensqueezeamp);
+                var _screenhei  = _winh * (1.0 - _transitioninterp * _screensqueezeamp);
+                var _screeny    = lerp(_winh * 0.5, 0.0, _transitioninterp);
+                var _screentint = make_color_hsv(200, _transitioninterp * 255, _transitioninterp * 255);
+                draw_surface_stretched_ext(global.surfScreen, (_winw -_screenwid) * 0.5, _screeny, _screenwid, _screenhei, _screentint, 1.0);
+            }
+            else
+            {
+                var _screensqueezeamp = 0.4;
+                var _transitioninterp = interp_weight(transitionCtr, transitionTime, 1.5, 2.0);
+                
+                var _screenwid  = _winw * ((1.0 + _screensqueezeamp) - _transitioninterp * _screensqueezeamp);
+                var _screenhei  = _winh * ((1.0 - _screensqueezeamp) + _transitioninterp * _screensqueezeamp);
+                var _screeny    = lerp(_winh, 0.0, _transitioninterp);
+                var _screentint = make_color_hsv(128, _transitioninterp * 255, _transitioninterp * 255);
+                draw_surface_stretched_ext(global.surfScreen, (_winw -_screenwid) * 0.5, _screeny, _screenwid, _screenhei, _screentint, 1.0);
+            }
+        }
+        else
+        {
+            draw_surface_stretched(global.surfScreen, 0, 0, _winw, _winh);
+        }
+        
+        // draw_surface_stretched(global.surfScreen, 0, 0, _winw, _winh);
+    shader_reset();
+    
+    
+    // Draw the resulting surface
+    // draw_surface_stretched(_crtsurf, 0, 0, _winw, _winh);
+    
     texture_set_interpolation(false);
     
     // Free temp. surfaces
-    surface_free(_smallsurf);
+    surface_free(_crtsurf);
 }
 else
 {
     /// draw w/o shaders applied
-    draw_surface_stretched(global.surfPostprocess, 0, 0, window_get_width(), window_get_height());
+    // background
+    draw_clear(0);
+    
+    // animate transition
+    if (transitionIsHappening)
+    {
+        if (transitionIsFadeout)
+        {
+            var _screensqueezeamp = 0.8;
+            var _transitioninterp = interp_weight(transitionCtr, transitionTime, 2.0, 1.5);
+            // _transitioninterp = 1.0 - _transitioninterp;
+            var _screenwid  = _winw * (1.0 + _transitioninterp * _screensqueezeamp);
+            var _screenhei  = _winh * (1.0 - _transitioninterp * _screensqueezeamp);
+            var _screeny    = lerp(_winh * 0.5, 0.0, _transitioninterp);
+            var _screentint = make_color_hsv(200, _transitioninterp * 255, _transitioninterp * 255);
+            draw_surface_stretched_ext(global.surfScreen, (_winw -_screenwid) * 0.5, _screeny, _screenwid, _screenhei, _screentint, 1.0);
+        }
+        else
+        {
+            var _screensqueezeamp = 0.4;
+            var _transitioninterp = interp_weight(transitionCtr, transitionTime, 1.5, 2.0);
+            
+            var _screenwid  = _winw * ((1.0 + _screensqueezeamp) - _transitioninterp * _screensqueezeamp);
+            var _screenhei  = _winh * ((1.0 - _screensqueezeamp) + _transitioninterp * _screensqueezeamp);
+            var _screeny    = lerp(_winh, 0.0, _transitioninterp);
+            var _screentint = make_color_hsv(128, _transitioninterp * 255, _transitioninterp * 255);
+            draw_surface_stretched_ext(global.surfScreen, (_winw -_screenwid) * 0.5, _screeny, _screenwid, _screenhei, _screentint, 1.0);
+        }
+    }
+    else
+    {
+        draw_surface_stretched(global.surfScreen, 0, 0, _winw, _winh);
+    }
 }
 
+</string>
+          </argument>
+        </arguments>
+      </action>
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>/// Draw the build info &amp; debug info
+draw_set_halign(2); draw_set_valign(0);
+var _str = global.debugBuildStr
+    + "#FPS : " + string(fps_real)
+    + "#INPUT : " + string(oInput.inputMethodCurrent) + "[" + oInput.inputMethodNameStr[@ oInput.inputMethodCurrent] + "] - DEVICE \#" + string(oInput.inputDevice);
+    
+if (oInput.inputMethodCurrent == eINPUT_METHOD.GAMEPAD)
+{
+    /*
+    _str += "# !!&gt; DEVICES : [";
+    for (var i=0; i&lt;ds_list_size(oInput.inputGamepadList); i++)
+    {
+        var _pad = oInput.inputGamepadList[| i];
+        _str += string(_pad) + ", ";
+    }
+    _str += "]";
+    
+    for (var i=0; i&lt;16; i++)
+    {
+        _str += "# &gt; BTN " + string_format(i, 2, 0) + "] : " + string(gamepad_button_check(oInput.inputDevice, i));
+    }
+    
+    _str += "#===========================";
+    
+    for (var i=32769; i&lt;32789; i++)
+    {
+        _str += "# &gt; BTN " + string_format(i, 2, 0) + "] : " + string(gamepad_button_check(oInput.inputDevice, i));
+    }
+    */
+    var _centerx         = global.winCenterX, _centery = global.winCenterY;
+    var _gpaxissize      = 64;
+    var _gpaxissticksize = 16;
+    var _gpbuttonsize    = 16;
+    var _gpbuttonmargin  = 32;
+    var _gpinputx   = _centerx;
+    var _gpinputy   = global.winHei * 0.8;
+    var _gpaxisx    = _centerx - _gpaxissize - 16;
+    var _gpbuttonx  = _centerx + _gpaxissize + 16;
+    
+    // Draw stick
+    var _gpaxisstickx = _gpaxisx + oInput.inputH[@ eINPUT.HLD] * _gpaxissize;
+    var _gpaxissticky = _gpinputy + oInput.inputV[@ eINPUT.HLD] * _gpaxissize;
+    draw_set_circle_precision(8);
+    draw_circle(_gpaxisx, _gpinputy, _gpaxissize, true);
+    draw_circle(_gpaxisstickx, _gpaxissticky, _gpaxissticksize, false);
+    
+    // Draw ABXY button
+    var _currentgp = oInput.inputDevice;
+    draw_set_halign(1); draw_set_valign(1);
+    
+    // (A)
+    var _bx = _gpbuttonx;
+    var _by = _gpinputy + _gpbuttonmargin;
+    var _col = merge_colour(c_white, c_gray, gamepad_button_check(_currentgp, gp_face1));
+    draw_circle_colour(_bx, _by, _gpbuttonsize, _col, _col, false);
+    ui_draw_text(_bx, _by, "A", 1, 0, c_black, 1.0);
+    
+    // (B)
+    var _bx = _gpbuttonx + _gpbuttonmargin;
+    var _by = _gpinputy;
+    var _col = merge_colour(c_white, c_gray, gamepad_button_check(_currentgp, gp_face2));
+    draw_circle_colour(_bx, _by, _gpbuttonsize, _col, _col, false);
+    ui_draw_text(_bx, _by, "B", 1, 0, c_black, 1.0);
+    
+    // (X)
+    var _bx = _gpbuttonx - _gpbuttonmargin;
+    var _by = _gpinputy;
+    var _col = merge_colour(c_white, c_gray, gamepad_button_check(_currentgp, gp_face3));
+    draw_circle_colour(_bx, _by, _gpbuttonsize, _col, _col, false);
+    ui_draw_text(_bx, _by, "X", 1, 0, c_black, 1.0);
+    
+    // (Y)
+    var _bx = _gpbuttonx;
+    var _by = _gpinputy - _gpbuttonmargin;
+    var _col = merge_colour(c_white, c_gray, gamepad_button_check(_currentgp, gp_face4));
+    draw_circle_colour(_bx, _by, _gpbuttonsize, _col, _col, false);
+    ui_draw_text(_bx, _by, "Y", 1, 0, c_black, 1.0);
+    
+    // Draw confirm / deny button
+    var _buttony = _gpinputy + _gpaxissize + 16;
+    
+    // (confirm)
+    var _bx = _gpinputx - _gpbuttonmargin;
+    var _by = _gpinputy + _gpaxissize + 16;
+    var _col = merge_colour(c_white, c_gray, oInput.inputConfirm[@ eINPUT.HLD]);
+    draw_rectangle_colour(_bx - _gpbuttonsize, _by - 4, _bx + _gpbuttonsize, _by + 4, _col, _col, _col, _col, false);
+    
+    // (deny)
+    var _bx = _gpinputx + _gpbuttonmargin;
+    var _by = _gpinputy + _gpaxissize + 16;
+    var _col = merge_colour(c_white, c_gray, oInput.inputDeny[@ eINPUT.HLD]);
+    draw_rectangle_colour(_bx - _gpbuttonsize, _by - 4, _bx + _gpbuttonsize, _by + 4, _col, _col, _col, _col, false);
+}
+    
+// + "#STATE : " + fsmState
+// + "#UI ZOOM : " + string(global.gameUIZoom) + "#RESOLUTION : " + string(global.winWid) + ", " + string(global.winHei);
+
+ui_draw_text(global.winWid - 7, 9, _str, 1, 0, c_black, 1.0);
+ui_draw_text(global.winWid - 8, 8, _str, 1, 0, c_white, 1.0);
 </string>
           </argument>
         </arguments>
@@ -432,7 +847,7 @@ else
           <argument>
             <kind>1</kind>
             <string>/// Begin catching the GUI draws
-surface_set_target(global.surfPostprocess);
+surface_set_target(global.surfScreen);
 </string>
           </argument>
         </arguments>

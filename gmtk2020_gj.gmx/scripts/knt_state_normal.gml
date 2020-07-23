@@ -8,53 +8,391 @@ if (!fsmStateInit)
     }
 }
 
-/// Check for room transition request
-if (ingameRoomTransitionRequest)
+if (!transitionIsHappening)
 {
-    // Switch state to room change
-    debug_log("oKNT > SWITCH TO STATE_ROOM_MOVE");
-    fsm_set("room_move");
-}
-
-/// Check for item pickup request
-if (ingameItemPickupRequest)
-{
-    // Switch state to room change
-    debug_log("oKNT > SWITCH TO STATE_ITEM_GET");
-    fsm_set("item_get");
-}
-
-/// Check for powercell deposit request
-if (ingamePowercellDepositRequest)
-{
-    // Switch state to room change
-    debug_log("oKNT > SWITCH TO STATE_OBJECTIVE_POWERCELL_DEPOSIT");
-    fsm_set("objective_powercell_deposit");
-}
-
-/// Check for teleport selection request
-if (ingameTeleportSelectRequest)
-{
-    // Switch state to room change
-    debug_log("oKNT > SWITCH TO STATE_TELEPORT_SELECT");
-    fsm_set("teleport_select");
-}
-
-/// Check for ending request
-if (ingameEndingRequest)
-{
-    // Switch state to room change
-    debug_log("oKNT > SWITCH TO STATE_ENDING");
-    fsm_set("ending");
-}
-
-/// Check for player dead
-if (oPlayer.fsmState == "dead")
-{
-    if (keyboard_check_pressed(vk_enter))
+    /// Update play time
+    oGamevars.playtimeSecsMod += delta_time * 0.000001;
+    
+    if (oGamevars.playtimeSecsMod >= 1.0)
     {
-        // Respawn at hub
-        fsm_set("hub_respawn");
+        oGamevars.playtimeSecsMod -= 1.0;
+        oGamevars.playtimeSecs++;
+    }
+    
+    /// Check for room transition request
+    if (ingameRoomTransitionRequest)
+    {
+        // Switch state to room change
+        debug_log("oKNT > SWITCH TO STATE_ROOM_MOVE");
+        knt_transition("room_move", 4);
+        
+        // Play sound
+        sfx_play(sndWallImpact, 1.0, 1.0);
+    }
+    
+    /// Check for item pickup request
+    if (ingameItemPickupRequest)
+    {
+        // Switch state to room change
+        debug_log("oKNT > SWITCH TO STATE_ITEM_GET");
+        knt_transition("item_get", 4);
+        
+        // Play sound
+        sfx_play(sndPrompt, 1.0, 1.0);
+    }
+    
+    /// Check for powercell deposit request
+    if (ingamePowercellDepositRequest)
+    {
+        // Switch state to room change
+        debug_log("oKNT > SWITCH TO STATE_OBJECTIVE_POWERCELL_DEPOSIT");
+        knt_transition("objective_powercell_deposit", 4);
+        
+        // Play sound
+        sfx_play(sndPrompt, 1.0, 1.0);
+    }
+    
+    /// Check for teleport selection request
+    if (ingameTeleportSelectRequest)
+    {
+        // Switch state to room change
+        debug_log("oKNT > SWITCH TO STATE_TELEPORT_SELECT");
+        knt_transition("teleport_select", 4);
+        
+        // Play sound
+        sfx_play(sndPrompt, 1.0, 1.0);
+    }
+    
+    /// Check for ending request
+    if (ingameEndingRequest)
+    {
+        // Switch state to room change
+        debug_log("oKNT > SWITCH TO STATE_ENDING");
+        knt_transition("ending");
+        
+        // Play sound
+        sfx_play(sndPrompt, 1.0, 1.0);
+    }
+    
+    /// Check for player dead
+    if (oPlayer.fsmState == "dead")
+    {
+        if (keyboard_check_pressed(vk_enter))
+        {
+            // Respawn at hub
+            knt_transition("hub_respawn");
+            
+            // Play sound
+            sfx_play(sndPrompt, 1.0, 1.0);
+        }
+    }
+    
+    /// Check for pause request
+    if (keyboard_check_pressed(vk_escape))
+    {
+        // Switch state to paused state
+        knt_transition("paused_main", room_speed * 0.25);
+        
+        // Play sound
+        sfx_play(sndPrompt, 1.0, 1.0);
+    }
+    
+    // Unpause the game
+    global.isPhysicsPaused = false;
+}
+else
+{
+    // Force-pause the game
+    global.isPhysicsPaused = true;
+}
+
+#define knt_state_transition
+/// Game's transition state
+/*
+if (!fsmStateInit)
+{
+    // Set the UI
+    with (oUI)
+    {
+        fsm_set("nothing");
+    }
+    
+    // Set up the transition variables
+    transitionIsHappening = true;
+    transitionIsFadeout = true;
+    transitionCtr = 0;
+    
+    // Pause the game's physics
+    global.isPhysicsPaused = true;
+}
+
+/// Update transition
+if (transitionIsFadeout)
+{
+    // If enough frames has elapsed, switch to fadeout
+    if (transitionCtr > transitionTime)
+    {
+        transitionCtr = 0;
+        transitionIsFadeout = false;
+    }
+    else
+    {
+        transitionCtr++;
+    }
+}
+else
+{
+    // If enough frames has elapsed, stop transitioning
+    if (transitionCtr > transitionTime)
+    {
+        transitionCtr = 0;
+        fsm_set(transitionDest);
+    }
+    else
+    {
+        transitionCtr++;
+    }
+}
+
+/// Check for state switch
+if (fsmStateNext != "transition")
+{
+    // Set up the transition variables
+    transitionIsHappening = false;
+    transitionIsFadeout = false;
+    
+    // Unpause the game's physics
+    global.isPhysicsPaused = false;
+}
+*/
+
+#define knt_state_paused
+/// Game's paused menu state
+if (!fsmStateInit)
+{
+    with (oUI)
+    {
+        fsm_set("paused_main");
+    }
+    
+    // Pause the game's physics
+    global.isPhysicsPaused = true;
+}
+
+
+if (!transitionIsHappening)
+{
+    /// Check for inputs
+    var _inputv = keyboard_check_pressed(vk_down) - keyboard_check_pressed(vk_up);
+    var _inputconfirm = keyboard_check_pressed(vk_enter);
+    
+    if (_inputconfirm) /// Select menu
+    {
+        var _menudata = oUI.pausedMenuList[@ oUI.pausedMenuSelected];
+        knt_transition(_menudata[@ 0], 4);
+        
+        // Play sound
+        sfx_play(sndYes, 1.0, random_range(0.95, 1.05));
+    }
+    else if (_inputv != 0) /// Navigate menu
+    {
+        with (oUI)
+        {
+            var _listsz = array_length_1d(pausedMenuList);
+            pausedMenuSelected = (pausedMenuSelected + _inputv + _listsz) % _listsz;
+            
+            // Play sound
+            sfx_play(sndSelect, 1.0, random_range(0.95, 1.05));
+        }
+    }
+    else if (keyboard_check_pressed(vk_escape)) /// Unpause request
+    {
+        // Switch state to main state
+        knt_transition("default", room_speed * 0.25);
+        
+        // Unpause the game's physics
+        global.isPhysicsPaused = false;
+        
+        // Play sound
+        sfx_play(sndNo, 1.0, random_range(0.95, 1.05));
+    }
+}
+
+#define knt_state_paused_settings
+/// Game's paused settings menu state
+if (!fsmStateInit)
+{
+    with (oUI)
+    {
+        fsm_set("paused_settings");
+    }
+}
+
+
+if (!transitionIsHappening)
+{
+    /// Check for inputs
+    var _inputh = keyboard_check_pressed(vk_right) - keyboard_check_pressed(vk_left);
+    var _inputv = keyboard_check_pressed(vk_down) - keyboard_check_pressed(vk_up);
+    var _inputconfirm = keyboard_check_pressed(vk_enter);
+    
+    if (!oUI.pausedSettingsAdjusting) /// Wait for users to select the settings item
+    {
+        if (_inputconfirm) /// Select settings item
+        {
+            oUI.pausedSettingsAdjusting = true;
+        }
+        else if (_inputv != 0) /// Navigate settings items
+        {
+            with (oUI)
+            {
+                var _listsz = array_length_1d(pausedSettingsList);
+                pausedSettingsSelected = (pausedSettingsSelected + _inputv + _listsz) % _listsz;
+                
+                // Play sound
+                sfx_play(sndSelect, 1.0, random_range(0.95, 1.05));
+            }
+        }
+        else if (keyboard_check_pressed(vk_escape)) /// Unpause request
+        {
+            // Switch state to paused menu state
+            knt_transition("paused_main", 4);
+            
+            // Play sound
+            sfx_play(sndNo, 1.0, random_range(0.95, 1.05));
+        }
+    }
+    else
+    {
+        if (_inputconfirm || keyboard_check_pressed(vk_escape)) /// Confirm
+        {
+            oUI.pausedSettingsAdjusting = false;
+            
+            // Play sound
+            sfx_play(sndNo, 1.0, random_range(0.95, 1.05));
+        }
+        else if (_inputh != 0)
+        {
+            var _currentitem        = oUI.pausedSettingsList[@ oUI.pausedSettingsSelected];
+            var _currentitemvalueidx    = _currentitem[@ 1];
+            var _currentitemvaluetbl    = _currentitem[@ 2];
+            var _valuetblsize = array_length_1d(_currentitemvaluetbl);
+            
+            // Update value index
+            _currentitem[@ 1] = (_currentitemvalueidx + _inputh + _valuetblsize) % _valuetblsize;
+            
+            // Update values
+            switch (oUI.pausedSettingsSelected)
+            {
+                case eSETTINGS.SFX_VOL:
+                    global.sfxVolume = _currentitemvaluetbl[@ _currentitem[@ 1]];
+                    sfx_play(sndYes, 1.0, random_range(0.8, 1.2));
+                    break;
+                case eSETTINGS.MUS_VOL:
+                    global.musicVolume = _currentitemvaluetbl[@ _currentitem[@ 1]];
+                    music_update_volume(room_speed * 0.5);
+                    
+                    // Play sound
+                    sfx_play(sndSelect, 1.0, random_range(0.95, 1.05));
+                    break;
+                case eSETTINGS.UI_FLICKER:
+                    oGamevars.miscUIFlicker = _currentitemvaluetbl[@ _currentitem[@ 1]];
+                    
+                    // Play sound
+                    sfx_play(sndSelect, 1.0, random_range(0.95, 1.05));
+                    break;
+                case eSETTINGS.POSTPROCESSING:
+                    if (global.postprocessSupport)
+                    {
+                        global.postprocess = _currentitemvaluetbl[@ _currentitem[@ 1]];
+                        
+                        // Play sound
+                        sfx_play(sndSelect, 1.0, random_range(0.95, 1.05));
+                    }
+                    else
+                    {
+                        _currentitem[@ 1] = 1;
+                        global.postprocess = false;
+                        
+                        // Play sound
+                        sfx_play(sndNo, 1.0, random_range(0.95, 1.05));
+                    }
+                    break;
+            }
+        }
+    }
+}
+
+#define knt_state_paused_respawn
+/// Game's paused respawn menu state
+if (!fsmStateInit)
+{
+    with (oUI)
+    {
+        fsm_set("paused_respawn");
+    }
+}
+
+
+if (!transitionIsHappening)
+{
+    /// Check for inputs
+    var _inputconfirm   = keyboard_check_pressed(ord('Y'));
+    var _inputdeny      = keyboard_check_pressed(ord('N')) || keyboard_check_pressed(vk_escape);
+    if (_inputdeny)
+    {
+        // Deny : return to paused menu
+        knt_transition("paused_main");
+        
+        // Play sound
+        sfx_play(sndNo, 1.0, random_range(0.95, 1.05));
+    }
+    else if (_inputconfirm)
+    {
+        // Confirm : kill player & return to normal/ingame state
+        with (oPlayer)
+        {
+            // Switch to hurt state and damage player
+            fsm_set("hurt");
+            hp -= hpMax;
+            
+            // Also apply knockback
+            vx = random_range(-4, 4);
+            vy = random_range(-4, -2);
+        }
+        knt_transition("default");
+    }
+}
+
+#define knt_state_paused_exit
+/// Game's paused exit menu state
+if (!fsmStateInit)
+{
+    with (oUI)
+    {
+        fsm_set("paused_exit");
+    }
+}
+
+
+if (!transitionIsHappening)
+{
+    /// Check for inputs
+    var _inputconfirm   = keyboard_check_pressed(ord('Y'));
+    var _inputdeny      = keyboard_check_pressed(ord('N')) || keyboard_check_pressed(vk_escape);
+    if (_inputdeny)
+    {
+        // Deny : return to paused menu
+        knt_transition("paused_main");
+        
+        // Play sound
+        sfx_play(sndNo, 1.0, random_range(0.95, 1.05));
+    }
+    else if (_inputconfirm)
+    {
+        // Confirm : exit game
+        sfx_play(sndFleshImpact, 1.0, 0.5);
+        game_end();
     }
 }
 
@@ -74,8 +412,59 @@ for (var i=room_first; i<=room_last; i++)
     room_set_background_color(i, c_black, false);
 }
 
-/// Switch to title state
-fsm_set("title");
+/// Check for shader support
+// (ignore the global.debugForceDisablePostprocess, they're for testing the no-postFX effects warning screen)
+if (global.debugForceDisablePostprocess || !shader_is_compiled(shd_postprocessing))
+{
+    global.postprocessSupport = false;
+    global.postprocess = false;
+}
+else
+{
+    global.postprocessSupport = true;
+    global.postprocess = true;
+}
+
+/// Switch to title state or no-postFX effects warning
+if (!transitionIsHappening)
+{
+    if (global.postprocessSupport)
+    {
+        // fsm_set("title");
+        knt_transition("title");
+    }
+    else
+    {
+        // fsm_set("no_filter_warning");
+        knt_transition("no_filter_warning");
+    }
+}
+
+#define knt_state_nofilter_warn
+/// Game's title screen state
+if (!fsmStateInit)
+{
+    with (oUI)
+    {
+        fsm_set("screen_nofilter_warning");
+    }
+    
+    // Go to init room
+    room_goto(rm_init);
+    
+    // Play noise music
+    music_play(musNoise, room_speed * 3.0);
+}
+
+/// If enter key was pressed, Switch to gameplay
+if (keyboard_check_pressed(vk_enter))
+{
+    // fsm_set("title");
+    knt_transition("title");
+    
+    // Play sound
+    sfx_play(sndYes, 1.0, random_range(0.9, 1.1));
+}
 
 #define knt_state_title
 /// Game's title screen state
@@ -97,12 +486,16 @@ if (!fsmStateInit)
 }
 
 /// If enter key was pressed, Switch to gameplay
-if (keyboard_check_pressed(vk_enter))
+if (!transitionIsHappening)
 {
-    fsm_set("intro");
-    
-    // Play sound
-    sfx_play(sndYes, 1.0, random_range(0.9, 1.1));
+    if (keyboard_check_pressed(vk_enter))
+    {
+        // fsm_set("intro");
+        knt_transition("intro");
+        
+        // Play sound
+        sfx_play(sndYes, 1.0, random_range(0.9, 1.1));
+    }
 }
 
 #define knt_state_intro
@@ -115,13 +508,23 @@ if (!fsmStateInit)
     }
     introCutsceneReady = false;
     introCutsceneIdx = 0;
+    
+    /// Check for intro skip
+    if (global.debugSkipIntro)
+    {
+        // Switch to next state
+        fsm_set("hub_respawn");
+    }
+    
+    /// Set game begin date
+    playtimeBeginDate = date_current_datetime();
 }
 
 if (fsmStateCtr > introCutsceneWaitFrames)
 {
     introCutsceneReady = true;
     
-    if (keyboard_check_pressed(vk_enter))
+    if (keyboard_check_pressed(vk_enter) && !transitionIsHappening)
     {
         fsmStateCtr = 0;
         introCutsceneIdx++;
@@ -130,7 +533,8 @@ if (fsmStateCtr > introCutsceneWaitFrames)
             introCutsceneIdx = clamp(introCutsceneIdx, 0, sprite_get_number(sprUICutsceneBegin) - 1);
             
             // Switch to next state
-            fsm_set("hub_respawn");
+            // fsm_set("hub_respawn");
+            knt_transition("hub_respawn");
         }
         
         // Play sound
@@ -176,6 +580,11 @@ if (!fsmStateInit)
     
     // Play ingame music
     music_play(musIngame, room_speed * 6.0);
+    
+    with (oUI)
+    {
+        fsm_set("nothing");
+    }
 }
 else
 {
@@ -205,6 +614,7 @@ else
         // Set players state & update upgrades stats
         with (oPlayer)
         {
+            fsmState = "nada";
             fsm_set("spawn_fall");
             event_user(1);
             
@@ -262,6 +672,9 @@ if (!fsmStateInit)
     {
         fsm_set("powercell_deposit");
     }
+    
+    // Pause the game's physics
+    global.isPhysicsPaused = true;
 }
 
 /// Update deposit mechanic
@@ -282,6 +695,9 @@ if (keyboard_check_pressed(vk_escape)) // User pressed the escape key
         fsm_set("default");
         anim_fire("idle");
     }
+    
+    // Unpause the game's physics
+    global.isPhysicsPaused = false;
 }
 else
 {

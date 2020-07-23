@@ -26,6 +26,7 @@
           <argument>
             <kind>1</kind>
             <string>/// Game UI handler
+depth = 101;
 
 </string>
           </argument>
@@ -74,6 +75,7 @@ if (!singleton_update())
             <string>/// FSM
 fsm_init();
 fsm_add_state("nothing", ui_nothing);
+fsm_add_state("screen_nofilter_warning", ui_screen_nofilter_warning);
 fsm_add_state("title", ui_title);
 fsm_add_state("intro", ui_intro);
 fsm_add_state("ending", ui_ending);
@@ -82,6 +84,11 @@ fsm_add_state("item_get", ui_item_get);
 fsm_add_state("item_assign", ui_item_assign);
 fsm_add_state("teleport_select", ui_teleport_select);
 fsm_add_state("powercell_deposit", ui_powercell_deposit);
+
+fsm_add_state("paused_main", ui_paused);
+fsm_add_state("paused_settings", ui_paused_settings);
+fsm_add_state("paused_respawn", ui_paused_respawn);
+fsm_add_state("paused_exit", ui_paused_exit);
 fsm_set("nothing");
 
 </string>
@@ -121,31 +128,33 @@ itemAssignDisplayKeysize    = 64;
 itemAssignDisplayKeymargin  = 8;
 itemAssignDisplayMaxWid     = 4; // Display 4 keys per row
 
-</string>
-          </argument>
-        </arguments>
-      </action>
-      <action>
-        <libid>1</libid>
-        <id>603</id>
-        <kind>7</kind>
-        <userelative>0</userelative>
-        <isquestion>0</isquestion>
-        <useapplyto>-1</useapplyto>
-        <exetype>2</exetype>
-        <functionname></functionname>
-        <codestring></codestring>
-        <whoName>self</whoName>
-        <relative>0</relative>
-        <isnot>0</isnot>
-        <arguments>
-          <argument>
-            <kind>1</kind>
-            <string>/// Window resolution
-global.winWid = window_get_width();
-global.winHei = window_get_height();
-global.winCenterX = global.winWid * 0.5;
-global.winCenterY = global.winHei * 0.5;
+/// Paused menu
+pausedMenuList = makearray(
+    makearray("default", "RESUME", "RESUME THE OPERATION"),
+    makearray("paused_settings", "SET UP BIOS", "TWEAK THE SETTINGS"),
+    makearray("paused_respawn", "RE-DEPLOY", "SELF-DESTRUCT AND RE-DEPLOY AT THE LOBBY"),
+    makearray("paused_exit", "HALT OPERATION", "STOP OPERATING JOTTEL AND TRY AGAIN NEXT TIME (PROGRESS WILL NOT BE SAVED)"),
+);
+pausedMenuSelected = 0;
+
+/// Paused menu : settings
+enum eSETTINGS
+{
+    SFX_VOL = 0,
+    MUS_VOL,
+    UI_FLICKER,
+    POSTPROCESSING
+}
+var _percentval = makearray(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0);
+var _percentstr = makearray("0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%");
+pausedSettingsList = makearray(
+    makearray("SFX. VOL", 5, _percentval, _percentstr),
+    makearray("MUS. VOL", 5, _percentval, _percentstr),
+    makearray("ADJUST UI FLICKER", 5, _percentval, _percentstr),
+    makearray("SHADER/FILTER FX", 0, makearray(true, false), makearray("Y", "N"))
+);
+pausedSettingsSelected = 0;
+pausedSettingsAdjusting = false;
 
 </string>
           </argument>
@@ -168,6 +177,7 @@ global.winCenterY = global.winHei * 0.5;
           <argument>
             <kind>1</kind>
             <string>/// UI Message
+// Normal message
 UIMessage1  = ""; // big center message
 UIMessage2  = ""; // small center message
 UIMessage1Scale = 6;
@@ -175,6 +185,41 @@ UIMessage2Scale = 2;
 
 UIMessageShowFrames     = 0;
 UIMessageShowFramesMax  = room_speed * 2.0;
+
+// Input popup
+UIInputModePopup            = false;
+UIInputModePopupIn          = true;
+UIInputModePopupFrames      = 0;
+UIInputModePopupFramesMax   = room_speed * 0.5;
+UIInputModePopupFramesWait  = room_speed;
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="1" enumb="0">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>/// Free allocated memories
+if (objectInitialized)
+{
+    /// FSM
+    fsm_destroy();
+}
 </string>
           </argument>
         </arguments>
@@ -225,9 +270,199 @@ global.winCenterY = global.winHei * 0.5;
           <argument>
             <kind>1</kind>
             <string>/// Update UI message
-if (UIMessageShowFrames &gt; 0)
+// Check for paused
+if (!global.isPhysicsPaused)
 {
-    UIMessageShowFrames--;
+    if (UIMessageShowFrames &gt; 0)
+    {
+        UIMessageShowFrames--;
+    }
+}
+
+</string>
+          </argument>
+        </arguments>
+      </action>
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>/// Update UI input popup
+if (UIInputModePopup)
+{
+    if (UIInputModePopupIn)
+    {
+        if (UIInputModePopupFrames &gt; UIInputModePopupFramesMax + UIInputModePopupFramesWait)
+        {
+            UIInputModePopupIn = false;
+            UIInputModePopupFrames = UIInputModePopupFramesMax;
+        }
+        else
+        {
+            UIInputModePopupFrames++;
+        }
+    }
+    else
+    {
+        if (UIInputModePopupFrames &gt; 0)
+        {
+            UIInputModePopupFrames--;
+        }
+        else
+        {
+            UIInputModePopup = false;
+            UIInputModePopupFrames = 0;
+        }
+    }
+}
+
+</string>
+          </argument>
+        </arguments>
+      </action>
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>/// Update scales
+/// UI title
+titleLogoScale = 6 * global.gameUIZoom;
+UITitleScale        = 6 * global.gameUIZoom;
+UITitleScaleSmall   = 4 * global.gameUIZoom;
+
+/// Item assign
+itemAssignDisplayKeysize = 64 * global.gameUIZoom;
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="7" enumb="10">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>/// Display input popup
+if (!UIInputModePopup)
+{
+    UIInputModePopup        = true;
+    UIInputModePopupIn      = true;
+    UIInputModePopupFrames  = 0;
+}
+else
+{
+    UIInputModePopupIn      = true;
+    UIInputModePopupFrames  = 0;
+}
+
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="8" enumb="75">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>/// Draw popup
+var _centerx = global.winCenterX, _centery = global.winCenterY;
+if (UIInputModePopup)
+{
+    var _popupaniminterp     = interp_weight(UIInputModePopupFrames, UIInputModePopupFramesMax, 3.0, 3.0);
+    var _popupaniminterpfast = interp_weight(UIInputModePopupFrames, 4, 3.0, 3.0);
+    
+    var _popupscale      = 3 * global.gameUIZoom;
+    var _popuptextscale  = 2 * global.gameUIZoom;
+    var _popupcolour     = c_white;
+    var _popupalpha      = _popupaniminterpfast;
+    
+    var _popupwidth     = global.winWid * 0.85;
+    var _popupheight    = global.winHei * 0.15;
+    var _popupx = (global.winWid - _popupwidth) * 0.5;
+    var _popupy = lerp(-_popupheight, 16, _popupaniminterp);
+    
+    var _popupiconmargin = 16;
+    var _popupiconsize   = floor(_popupheight - _popupiconmargin * 2);
+    var _popupiconx = _popupx + _popupiconmargin;
+    var _popupicony = _popupy + _popupiconmargin;
+    
+    var _popupmsgstr1 = "NEW INPUT DETECTED";
+    var _popupmsgstr2 = "NOW USING : ${0}${br}(${1})";
+    var _popupmsgstrx = _popupiconx + _popupiconsize + _popupiconmargin;
+    var _popupmsgstry1 = _popupicony;
+    var _popupmsgstry2 = _popupmsgstry1 + string_height(_popupmsgstr1) * _popupscale;
+    
+    // Draw backdrop
+    ui_draw_rect(_popupx, _popupy, _popupwidth, _popupheight, _popupcolour, _popupalpha);
+    ui_draw_rect(_popupx + _popupscale, _popupy + _popupscale, _popupwidth - _popupscale * 2, _popupheight - _popupscale * 2, c_black, _popupalpha);
+    
+    // Draw icon
+    var _inputcurrentmethod     = oInput.inputMethodCurrent;
+    var _inputcurrentmethodstr  = oInput.inputMethodNameStr[@ _inputcurrentmethod] + "#" + string(_popupiconsize) + "x" + string(_popupiconsize);
+    ui_draw_rect(_popupiconx, _popupicony, _popupiconsize, _popupiconsize, _popupcolour, _popupalpha);
+    ui_draw_rect_text(_popupiconx + 1, _popupicony + 1, _popupiconsize - 2, _popupiconsize - 2, c_black, _popupalpha, _inputcurrentmethodstr, 1, 0, 0, 1, 1, _popupcolour, _popupalpha);
+    
+    // Draw message
+    var _popupdevicestr1 = oInput.inputMethodNameStr[@ _inputcurrentmethod];
+    var _popupdevicestr2 = "GOOD OL' KEYBOARD";
+    
+    if (_inputcurrentmethod == eINPUT_METHOD.GAMEPAD)
+    {
+        _popupdevicestr2 = "GAMEPAD : " + gamepad_get_description(oInput.inputDevice);
+    }
+    
+    draw_set_halign(0); draw_set_valign(0);
+    ui_draw_text(_popupmsgstrx, _popupmsgstry1, _popupmsgstr1, _popupscale, 0, c_orange, _popupalpha);
+    ui_draw_text_format(_popupmsgstrx, _popupmsgstry2, _popupmsgstr2, _popuptextscale, _popupcolour, _popupalpha, 0, 0, makearray(_popupdevicestr1, _popupdevicestr2));
 }
 </string>
           </argument>
@@ -253,7 +488,6 @@ if (UIMessageShowFrames &gt; 0)
             <kind>1</kind>
             <string>/// Draw UI and update FSM
 fsm_update();
-
 </string>
           </argument>
         </arguments>

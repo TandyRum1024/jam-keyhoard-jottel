@@ -1,12 +1,12 @@
 #define inv_key_add
-/// inv_key_add(_keycode, _available, _displayname)
-var _keycode = argument0, _available = argument1, _displayname = argument2;
+/// inv_key_add(_keystate, _available, _id)
+var _keystate = argument0, _available = argument1, _id = argument2;
 
 var _data = -1;
-_data[eINVKEY.KEYCODE]         = _keycode;
-_data[eINVKEY.AVAILABLE]       = _available;
-_data[eINVKEY.DISPLAY_NAME]    = _displayname;
-_data[eINVKEY.ITEM]            = eITEM.NONE;
+_data[eINVKEY.KEY]          = _keystate;
+_data[eINVKEY.AVAILABLE]    = _available;
+_data[eINVKEY.ID]           = _id;
+_data[eINVKEY.ITEM]         = eITEM.NONE;
 
 ds_list_add(oGamevars.invSlots, _data);
 
@@ -19,7 +19,7 @@ var _slots = oGamevars.invSlots;
 for (var i=0; i<ds_list_size(_slots); i++)
 {
     var _data = _slots[| i];
-    if (_data[@ eINVKEY.KEYCODE] == _keycode)
+    if (_data[@ eINVKEY.ID] == _keycode)
         return _data;
 }
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.3.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="17" height="17" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="14">
+<map version="1.4" tiledversion="1.4.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="17" height="17" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="14">
  <editorsettings>
   <export target="rm_up_kick.room.gmx" format="gmx"/>
  </editorsettings>
@@ -7,10 +7,10 @@
   <property name="speed" type="int" value="60"/>
  </properties>
  <tileset firstgid="1" source="objects.tsx"/>
- <tileset firstgid="5" source="tiles.tsx"/>
+ <tileset firstgid="7" source="tiles.tsx"/>
  <layer id="1" name="tile" width="17" height="17">
   <data encoding="base64" compression="zlib">
-   eAG9jlEKwCAMQ/uz+195K+zJo1gVBhMkaZJGIyKu9z4wDtoOWSDHnIhmxF9pZGYd9uyj08vsTHrdsfdnB28Z+aP/hJZI1pq598xrpvMyZ8/cHZVnztmO1z3PJx1k3O+Oyp2DuwOt7jGT9QzvkJ2K5HdvOrfqqN6sd5WZeacaf/yKN4NLAlQ=
+   eAGljtEKgDAMA/fm//+xTjg4QusmEyRtmpyOMcZ18D7V99llVPnK63hkUXK546eSS505nuzkTi61Y8xcx0i/Yvg7ztv3nAzfmOGwp+4wqk7Xs5897/lf7jGTYXe/mp1jNgOv6k6PLPdV3h266B9GxzEDrpU76hvz143MSmGc6g2lswPH
   </data>
  </layer>
  <objectgroup id="2" name="obj">

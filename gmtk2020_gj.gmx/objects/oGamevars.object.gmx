@@ -26,7 +26,35 @@
           <argument>
             <kind>1</kind>
             <string>/// Gameplay const. variables : Singleton check
-singleton_update();
+if (!singleton_update())
+    exit;
+
+</string>
+          </argument>
+        </arguments>
+      </action>
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>/// Gameplay settings
+/// SFX
+sfx_init();
+
+/// Misc. / Accesibility
+miscUIFlicker = 0.3;
 
 </string>
           </argument>
@@ -49,27 +77,11 @@ singleton_update();
           <argument>
             <kind>1</kind>
             <string>/// Gameplay const. variables
-/// Enum : input
-enum eINPUT
-{
-    HLD = 0,
-    PRS,
-    REL
-}
 
 /// Enum : inventory data
 enum eINV
 {
     AVAILABLE = 0,
-    ITEM
-}
-
-/// Enum : inventory key slot data
-enum eINVKEY
-{
-    KEYCODE = 0,
-    AVAILABLE,
-    DISPLAY_NAME,
     ITEM
 }
 
@@ -156,16 +168,18 @@ itemHealthIncreaseAmount = 5;
             <kind>1</kind>
             <string>/// Key slot &amp; inventory system
 /// List of inventory keys
+/*
 invSlots = ds_list_create();
 inv_key_add(ord("A"), false, "A");
 inv_key_add(ord("S"), false, "S");
-// inv_key_add(ord("D"), false, "D");
-// inv_key_add(ord("F"), false, "F");
 inv_key_add(ord("Z"), true, "Z");
 inv_key_add(ord("X"), true, "X");
+inv_key_add(vk_shift, false, "SHIFT");
+
+// inv_key_add(ord("D"), false, "D");
+// inv_key_add(ord("F"), false, "F");
 // inv_key_add(ord("C"), false, "C");
 // inv_key_add(ord("V"), false, "V");
-inv_key_add(vk_shift, false, "SHIFT");
 
 /// Table of keys unlocking on each level
 invKeysUnlock = makearray(
@@ -180,7 +194,7 @@ invKeysLevel = 0;
 
 /// Inventory that tracks all of the items
 invItems = ds_list_create();
-
+*/
 </string>
           </argument>
         </arguments>
@@ -201,9 +215,17 @@ invItems = ds_list_create();
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>/// Game objective
+            <string>/// Game vars &amp; objective
+/// Game objective
 progress    = 0;
 progressMax = 10;
+
+/// Game begin date
+playtimeBeginDate = date_current_datetime();
+
+/// Game play time (in secs)
+playtimeSecs = 0;
+playtimeSecsMod = 0;
 
 </string>
           </argument>
@@ -275,7 +297,7 @@ roomEvents = ds_map_create();
             <kind>1</kind>
             <string>/// UI Animation
 /// Item get
-animUIItemGetWaitFrames = room_speed;
+animUIItemGetWaitFrames = room_speed * 0.5;
 
 </string>
           </argument>
@@ -371,6 +393,44 @@ animEnemyHurtWeight     = 4.0;
         </arguments>
       </action>
     </event>
+    <event eventtype="1" enumb="0">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>/// Free allocated memories
+if (objectInitialized)
+{
+    /// Key slot system
+    // if (ds_exists(invSlots, ds_type_list))
+    //     ds_list_destroy(invSlots);
+    
+    /// Teleporter system
+    if (ds_exists(teleportList, ds_type_list))
+        ds_list_destroy(teleportList);
+    
+    /// Room events
+    if (ds_exists(roomEvents, ds_type_map))
+        ds_map_destroy(roomEvents);
+}
+
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
     <event eventtype="7" enumb="11">
       <action>
         <libid>1</libid>
@@ -390,7 +450,7 @@ animEnemyHurtWeight     = 4.0;
             <kind>1</kind>
             <string>/// Update key slots upgrade status
 event_user(0);
-
+/*
 invKeysLevel = clamp(invKeysLevel, 0, array_length_1d(invKeysUnlock) - 1);
 for (var i=0; i&lt;=invKeysLevel; i++)
 {
@@ -402,6 +462,8 @@ for (var i=0; i&lt;=invKeysLevel; i++)
         inv_key_set_available(_keycode, true);
     }
 }
+*/
+debug_log("oGAMEVARS USER1&gt; THIS METHOD IS NOT USED PLEASE");
 
 </string>
           </argument>
@@ -426,11 +488,14 @@ for (var i=0; i&lt;=invKeysLevel; i++)
           <argument>
             <kind>1</kind>
             <string>/// Reset key slots upgrade status
+/*
 for (var i=0; i&lt;ds_list_size(invSlots); i++)
 {
     var _keydata = invSlots[| i];
     _keydata[@ eINVKEY.AVAILABLE] = false;
 }
+*/
+debug_log("oGAMEVARS USER0&gt; THIS METHOD IS NOT USED PLEASE");
 </string>
           </argument>
         </arguments>

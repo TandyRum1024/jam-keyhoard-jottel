@@ -57,7 +57,7 @@ SOFTWARE.
 <br>For the full license, refer to file `LICENSE_ASSETS.txt` and `COPYING.txt`
 
 ## Developement progress & misc. footages
-### **(Check out my twitter thread where I've posted a lot of in-development footages hete : [twitter.com/ZIKBAKGURI/status/1281659093766115328](https://twitter.com/ZIKBAKGURI/status/1281659093766115328))**
+### **(Check out my twitter thread where I've posted a lot of in-development footages here : [twitter.com/ZIKBAKGURI/status/1281659093766115328](https://twitter.com/ZIKBAKGURI/status/1281659093766115328))**
 ![d1](pics/DEV1.gif)
 ![d2](pics/DEV2.gif)
 ![d3](pics/DEV3.gif)
