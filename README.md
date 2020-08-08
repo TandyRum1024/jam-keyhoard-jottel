@@ -1,7 +1,7 @@
-# :keyboard: KEYHOARD JOTTEL : GMTK BUILD SOURCE CODE :keyboard:
+# :keyboard: KEYHOARD JOTTEL : SOURCE CODE :keyboard:
 ![banner](pics/GMTK20_COVER.png)
-### A source code of my metroidvania game with a twist : every item and upgrades uses your limited slots of keys on your keyboard, also an entry for [GMTK Game Jam 2020](https://itch.io/jam/gmtk-2020), written in 48 hours over the span of a weekend in 2020, July.
-### :point_right: See the game's [itch.io page](https://zikbakguru.itch.io/jottel) and the game's [submission page (rates & feedbacks are highly appreciated)](https://itch.io/jam/gmtk-2020/rate/699095) :point_left:
+### A source code of my metroidvania game with a twist : every item and upgrades uses your limited slots of keys on your keyboard. Also an entry for [GMTK Game Jam 2020](https://itch.io/jam/gmtk-2020), originally written in 48 hours over the span of a weekend in 2020, July.
+### :point_right: See the game's [itch.io page](https://zikbakguru.itch.io/jottel) and the game's [submission page](https://itch.io/jam/gmtk-2020/rate/699095) :point_left:
 [![Watch the gameplay video](pics/YT_VID_CAP.png)](https://youtu.be/jWNddsgIwSc)
 <br>(above links to the youtube video of gameplay)
 
@@ -19,7 +19,7 @@
 ![map](pics/map_view.png)
 They're conveniently placed inside of `/ASSETS` folder. The map file (`.tmx` file) can be opened with [Tiled map editor](https://thorbjorn.itch.io/tiled), The sound effect file (`.lch` files) can be opened with sfx synthesizer [LabChirp](https://labbed.itch.io/labchirp), And the music file (`loop1.kt` file) can be opened with music tracker [Klystrack](https://kometbomb.itch.io/klystrack).
 
-## :warning: Warning : Since this build is the exact same build as the gamejam build, This game contains various flaws! (for example; players can softlock the game by either falling out of bounds using the kicking moves or leaving the essential upgrades in a unreachable places) :warning:
+## :warning: This repo contains source code for the post-jam stability build, which differs a bit from the original game jam build in terms of graphics, post-processing effects and other bugfixes :warning:
 
 
 
