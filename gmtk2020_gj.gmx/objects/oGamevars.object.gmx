@@ -113,7 +113,8 @@ enum eEVENT
     DELETE_OBJ = 0, // Delete [object, x, y]
     CREATE_OBJ, // Crate [object, x, y]
     SWAP_PICKUP_ITEM, // Swap [itemtype, x, y]
-    UNLOCK_TP // Unlock teleport in the room
+    UNLOCK_TP, // Unlock teleport in the room
+    UNLOCK_ITEM // Unlock item [x, y]
 }
 
 /// Item metadata
@@ -121,11 +122,11 @@ enum eEVENT
 itemStr = -1;
 itemStr[eITEM.UPGRADE_MOBILITY]     = makearray("MOBILITY I : MOVEMENT", "A pair of functioning bionic legs.#I can properly move now!", "IMPROVES MOVEMENT!");
 itemStr[eITEM.UPGRADE_JUMP]         = makearray("MOBILITY II : JUMP", "Good, this motor enhancement upgrade for my legs is all I need for some extreme jumpin'.#I can jump properly now!", "ENABLES [JUMP]!#PRESS THE ASSIGNED INPUT TO JUMP");
-itemStr[eITEM.UPGRADE_SPRINT]       = makearray("MOBILITY III : SPRINTING", "A fine cuppa' joe that's gonna' aid my sprinting.#Best part of running up is this bean juice in your cup.#Anywho; I can sprint again.", "ENABLES [SPRINT]!#HOLD DOWN THE ASSIGNED INPUT TO SPRINT");
+itemStr[eITEM.UPGRADE_SPRINT]       = makearray("MOBILITY III : SPRINTING", "A fine cuppa' joe that's gonna' aid my sprinting.#Makes the waking up more enthusiastic -- by having this bean juice in one's cup.#(Well, technically robots can't drink coffee for any benefits.. But whatever, this is just a game)", "ENABLES [SPRINT]!#HOLD DOWN THE ASSIGNED INPUT TO SPRINT");
 itemStr[eITEM.UPGRADE_KICK]         = makearray("KICKING BOOTS", "A pair of trusty boots that I've lost a long time ago!#This comes with a brief yet effective manual on how to kick with style.", "ENABLES [KICK]!#USE [JUMP] AGAIN IN MIDAIR TO KICK");
 itemStr[eITEM.UPGRADE_WEAPON]       = makearray("EMITTER MV45", "A fairly high-tech energy-based weapon that is fairly lethal...#Time to emit some energy, yo.", "ENABLES [SHOOT]!#HOLD DOWN AND RELASE THE ASSIGNED INPUT TO SHOOT");
-itemStr[eITEM.UPGRADE_HP]           = makearray("HP CANISTER", "Wow, blood.", "INCREASES MAXIMUM HP BY 5!#(BUT ONLY WHEN THE CANISTER IS ASSIGNED TO)");
-itemStr[eITEM.UPGRADE_KEY_UNLOCK]   = makearray("SPARE KEY SLOT", "A plastic keyboard key with mechanical switch attached to it..#Probably belongs to some other computer's keyboard, but whatever -- it's mine now, thankyouverymuch.", "EXPANDED KEY SLOTS!#(PERMANENT!!)");
+itemStr[eITEM.UPGRADE_HP]           = makearray("HP CANISTER", "A canister with blood sloshing inside... Not sure how does the robots like my JOTTEL would benefit from this but it certainly makes them stronger &amp; more lively.", "INCREASES MAXIMUM HP BY 5!#(BUT ONLY WHEN THE CANISTER IS ASSIGNED TO)");
+itemStr[eITEM.UPGRADE_KEY_UNLOCK]   = makearray("SPARE KEY SLOT", "A plastic keyboard key with mechanical switch attached to it..#Probably belongs to some random computer's keyboard on the ship, but it fits in my keyslot module perfectly -- it's mine now, thankyouverymuch.", "EXPANDED KEY SLOTS!#(PERMANENT!!)");
 itemStr[eITEM.ITEM_POWERCELL]       = makearray("POWER CANISTER", "This thing not only provides power for the ship,#But it also contains various nanotechwhatevers that will aid the repair.", "ITEM, BRING IT TO THE HUB!");
 itemStr[eITEM.MISC]                 = makearray("ITEM", "Alan please add details", "MISC. ITEM");
 itemStr[eITEM.NONE]                 = makearray("NOTHING", "Ha, absolutely nothing.", "ABS(NOTHING)");
@@ -146,55 +147,6 @@ itemIcon[eITEM.NONE]                = eITEM.NONE;
 // Health item : attributes
 itemHealthIncreaseAmount = 5;
 
-</string>
-          </argument>
-        </arguments>
-      </action>
-      <action>
-        <libid>1</libid>
-        <id>603</id>
-        <kind>7</kind>
-        <userelative>0</userelative>
-        <isquestion>0</isquestion>
-        <useapplyto>-1</useapplyto>
-        <exetype>2</exetype>
-        <functionname></functionname>
-        <codestring></codestring>
-        <whoName>self</whoName>
-        <relative>0</relative>
-        <isnot>0</isnot>
-        <arguments>
-          <argument>
-            <kind>1</kind>
-            <string>/// Key slot &amp; inventory system
-/// List of inventory keys
-/*
-invSlots = ds_list_create();
-inv_key_add(ord("A"), false, "A");
-inv_key_add(ord("S"), false, "S");
-inv_key_add(ord("Z"), true, "Z");
-inv_key_add(ord("X"), true, "X");
-inv_key_add(vk_shift, false, "SHIFT");
-
-// inv_key_add(ord("D"), false, "D");
-// inv_key_add(ord("F"), false, "F");
-// inv_key_add(ord("C"), false, "C");
-// inv_key_add(ord("V"), false, "V");
-
-/// Table of keys unlocking on each level
-invKeysUnlock = makearray(
-    makearray(ord("Z"), ord("X")),
-    makearray(vk_shift),
-    makearray(ord("A")),
-    makearray(ord("S"))
-    // makearray(ord("C"), ord("V")),
-    // makearray(ord("D"), ord("F")),
-    );
-invKeysLevel = 0;
-
-/// Inventory that tracks all of the items
-invItems = ds_list_create();
-*/
 </string>
           </argument>
         </arguments>
@@ -271,9 +223,49 @@ teleportList = ds_list_create();
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>/// Room events
+            <string>/// Room related variables
 /// Map that stores each room's "events" such as item obtain, remove object, spawn object etc...
 roomEvents = ds_map_create();
+
+/// Visited map list
+roomVisited = ds_list_create();
+
+/// Map that stores room's data
+enum eROOMDATA
+{
+    NAME = 0,
+    DESC,
+    WID,
+    HEI,
+    TILELIST,  // list of tiles
+    ENTITYLIST // teleports, doors, items, enemies etc..
+}
+
+enum eROOMDATA_TILE
+{
+    X = 0,
+    Y,
+    OBJ_INDEX
+}
+
+enum eROOMDATA_ENTITY
+{
+    TYPE = 0,
+    X,
+    Y,
+    DATA
+}
+
+enum eROOMDATA_ENTITY_TYPE
+{
+    PICKUP = 0,
+    DOORS,
+    TELEPORT,
+    ENEMIES,
+    STATION
+}
+
+roomDatas = ds_map_create();
 
 </string>
           </argument>
@@ -348,6 +340,8 @@ animPlrKickKnockbackShakeWeight = 3.0;
 
 /// Hurt
 animPlrHurtWeight   = 3.0;
+animPlrHurtTiltAmpGround = 45;
+animPlrHurtTiltAmpMidair = 60;
 animPlrHurtShakeAmp = 8;
 
 </string>
@@ -424,6 +418,12 @@ if (objectInitialized)
     /// Room events
     if (ds_exists(roomEvents, ds_type_map))
         ds_map_destroy(roomEvents);
+        
+    /// Room data
+    if (ds_exists(roomDatas, ds_type_map))
+        ds_map_destroy(roomDatas);
+    if (ds_exists(roomVisited, ds_type_list))
+        ds_list_destroy(roomVisited);
 }
 
 </string>
@@ -463,7 +463,7 @@ for (var i=0; i&lt;=invKeysLevel; i++)
     }
 }
 */
-debug_log("oGAMEVARS USER1&gt; THIS METHOD IS NOT USED PLEASE");
+debug_log("!!!!!!!!!!!!!!!!!!!!! oGAMEVARS USER1&gt; THIS METHOD IS NOT USED PLEASE");
 
 </string>
           </argument>
@@ -495,7 +495,7 @@ for (var i=0; i&lt;ds_list_size(invSlots); i++)
     _keydata[@ eINVKEY.AVAILABLE] = false;
 }
 */
-debug_log("oGAMEVARS USER0&gt; THIS METHOD IS NOT USED PLEASE");
+debug_log("!!!!!!!!!!!!!!!!!!! oGAMEVARS USER0&gt; THIS METHOD IS NOT USED PLEASE");
 </string>
           </argument>
         </arguments>

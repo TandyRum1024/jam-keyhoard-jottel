@@ -1,5 +1,5 @@
 {
-    "activeFile": "rm_up_kick.tmx",
+    "activeFile": "rm_hub.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -204,16 +204,16 @@
             "scale": 0.75,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 876,
-                "y": 405.33333333333337
+                "x": 441.33333333333337,
+                "y": 328.66666666666663
             }
         },
         "rm_down_jump.tmx": {
             "scale": 1,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 593,
-                "y": 517
+                "x": 512,
+                "y": 480
             }
         },
         "rm_down_powercell.tmx": {
@@ -236,16 +236,19 @@
             "scale": 1.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 471.3333333333333,
-                "y": 232.33333333333331
+                "x": 345.33333333333326,
+                "y": 229.66666666666666
             }
+        },
+        "rm_hub.tmx#objects": {
+            "scaleInDock": 1
         },
         "rm_side_lobby.tmx": {
             "scale": 1,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 733,
-                "y": 327.5
+                "x": 481,
+                "y": 202.5
             }
         },
         "rm_side_sprint.tmx": {
@@ -268,16 +271,16 @@
             "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 312.6666666666667,
-                "y": 231.66666666666666
+                "x": 272,
+                "y": 271.3333333333333
             }
         },
         "rm_up_lobby.tmx": {
-            "scale": 1.5,
+            "scale": 0.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 449.3333333333333,
-                "y": 977
+                "x": 642,
+                "y": 643
             }
         },
         "tiles.tsx": {
@@ -293,12 +296,21 @@
     "map.tileWidth": 32,
     "map.width": 20,
     "openFiles": [
-        "rm_up_kick.tmx"
+        "rm_up_kick.tmx",
+        "rm_down_jump.tmx",
+        "rm_side_lobby.tmx",
+        "rm_up_lobby.tmx",
+        "rm_hub.tmx"
     ],
     "project": "JOTTEL.tiled-project",
     "property.type": "int",
     "recentFiles": [
-        "rm_up_kick.tmx"
+        "rm_up_kick.tmx",
+        "rm_down_jump.tmx",
+        "rm_side_lobby.tmx",
+        "rm_up_lobby.tmx",
+        "rm_hub.tmx",
+        "rm_down1.tmx"
     ],
     "resizeMap.removeObjects": false,
     "tileset.embedInMap": false,

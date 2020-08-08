@@ -115,7 +115,7 @@ velGravMax = 4;
 velGravAcc = 0.5;
 
 /// Attack wind-up state
-attackWindupFrames = 30;
+attackWindupFrames = 4;
 
 /// Attack state
 isDamaging = false;

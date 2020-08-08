@@ -45,11 +45,11 @@ ent_init();
 fsm_init();
 
 // (fsm)
-fsm_add_state("spawn_fall", plr_state_spawn_fall);
+fsm_add_state("spawn_fall", plr_state_spawn_fall); // respawn animation
 fsm_add_state("default", plr_state_normal);
 fsm_add_state("kick_dash", plr_state_kick_dash); // initial kick's dash duration
 fsm_add_state("kick_knockback", plr_state_kick_knockback); // after kick has hit something
-fsm_add_state("kick_down", plr_state_kick_down); // kick state after initial dash duration
+fsm_add_state("kick_down", plr_state_kick_down); // downward kick state after initial dash duration
 fsm_add_state("kick", plr_state_kick); // kick state after initial dash duration
 fsm_add_state("hurt", plr_state_hurt); // player hurt knockback
 fsm_add_state("dead", plr_state_dead); // player dead
@@ -57,6 +57,7 @@ fsm_add_state("interact", plr_state_interact); // interaction state (disable inp
 
 /// Input
 // (binds)
+/*
 inputBindL = vk_left;
 inputBindR = vk_right;
 inputBindU = vk_up;
@@ -64,10 +65,15 @@ inputBindD = vk_down;
 inputBindJump   = ord('Z');
 inputBindShoot  = ord('X');
 inputBindSprint = vk_shift;
+*/
+// (input listeners that will influence the input states below)
+inputListenJump   = makearray(false, false, false);
+inputListenShoot  = makearray(false, false, false);
+inputListenSprint = makearray(false, false, false);
 // (input states)
 // hold, press, release
-inputH = 0; // horizontal input
-inputV = 0; // vertical input
+inputH      = makearray(false, false, false); // horizontal input
+inputV      = makearray(false, false, false); // vertical input
 inputJump   = makearray(false, false, false); // jump
 inputSprint = makearray(false, false, false); // sprint
 inputShoot  = makearray(false, false, false); // shoot
@@ -292,11 +298,12 @@ fsm_update();
 // Reset all upgrade stats first
 event_user(0);
 
-// Loop through all the inventory &amp; check for upgrades
-var _slots = oGamevars.invSlots;
-for (var i=0; i&lt;ds_list_size(_slots); i++)
+// Loop through all the key slots &amp; check for upgrades
+var _slots  = oInput.invKeyslots;
+var _slotid = ds_map_find_first(_slots);
+while (_slotid != undefined)
 {
-    var _data = _slots[| i];
+    var _data = inv_key_get(_slotid);
     switch (_data[@ eINVKEY.ITEM])
     {
         case eITEM.UPGRADE_MOBILITY:
@@ -306,8 +313,9 @@ for (var i=0; i&lt;ds_list_size(_slots); i++)
         case eITEM.UPGRADE_JUMP:
             upgradeJump = true;
             
-            // bind the jump key to the upgrade item slot's keycode
-            inputBindJump = _data[@ eINVKEY.KEYCODE];
+            // re-bind the jump key to make it listen to the
+            // upgrade item slot's key state
+            inputListenJump = _data[@ eINVKEY.KEYSTATE];
             break;
             
         case eITEM.UPGRADE_KICK:
@@ -317,21 +325,25 @@ for (var i=0; i&lt;ds_list_size(_slots); i++)
         case eITEM.UPGRADE_SPRINT:
             upgradeSprint = true;
             
-            // bind the sprint key to the upgrade item slot's keycode
-            inputBindSprint = _data[@ eINVKEY.KEYCODE];
+            // re-bind the sprint key to make it listen to the
+            // upgrade item slot's key state
+            inputListenSprint = _data[@ eINVKEY.KEYSTATE];
             break;
             
         case eITEM.UPGRADE_WEAPON:
             upgradeWeapon = true;
             
-            // bind the sprint key to the upgrade item slot's keycode
-            inputBindShoot = _data[@ eINVKEY.KEYCODE];
+            // re-bind the shoot key to make it listen to the
+            // upgrade item slot's key state
+            inputListenShoot = _data[@ eINVKEY.KEYSTATE];
             break;
             
         case eITEM.UPGRADE_HP:
             hpMax += oGamevars.itemHealthIncreaseAmount;
             break;
     }
+    
+    _slotid = ds_map_find_next(_slots, _slotid);
 }
 
 // Update player HP
@@ -365,6 +377,19 @@ upgradeJump     = false;
 upgradeKick     = false;
 upgradeSprint   = false;
 upgradeWeapon   = false;
+
+if (global.debugAllPowerups)
+{
+    upgradeMove     = true;
+    upgradeJump     = true;
+    upgradeKick     = true;
+    upgradeSprint   = true;
+    upgradeWeapon   = true;
+    
+    inputListenJump   = oInput.inputKey1;
+    inputListenShoot  = oInput.inputKey2;
+    inputListenSprint = oInput.inputKey5;
+}
 
 hpMax = hpMaxDefault;
 </string>

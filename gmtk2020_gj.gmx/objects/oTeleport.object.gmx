@@ -29,6 +29,8 @@
 mask_index = bboxTile;
 image_speed = 0;
 active = false;
+
+roomIndex = id; // oRoom.entityTeleportIndex++;
 </string>
           </argument>
         </arguments>

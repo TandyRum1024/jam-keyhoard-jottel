@@ -75,36 +75,58 @@ if (!singleton_update())
 debug_log("oKNT &gt; DECL VARS...");
 
 /// Debugs
-global.debugSkipIntro = true;
+global.debugSkipIntro = false;
 global.debugForceDisablePostprocess = false;
 global.debugBuildStr = "KEYHRDJTL POST-JAM STABILITY BUILD v" + GM_version + " [" + date_date_string(GM_build_date) + "|" + date_time_string(GM_build_date) + "]";
+global.debugDisplayBuildStr = false;
 
-/// FSM
+global.debugAllPowerups = false;
+
+/// Declare FSM states
+// format : fsm_add_state("&lt;statename&gt;", state_script);
 fsm_init();
 fsm_add_state("default", knt_state_normal);
 // system
 fsm_add_state("init", knt_state_init);
-fsm_add_state("transition", knt_state_transition);
 // cutscene screens
 fsm_add_state("no_filter_warning", knt_state_nofilter_warn);
+fsm_add_state("seizure_warning", knt_state_seizure_warn);
 fsm_add_state("title", knt_state_title);
 fsm_add_state("intro", knt_state_intro);
 fsm_add_state("ending", knt_state_ending);
+fsm_add_state("credits", knt_state_credits);
+fsm_add_state("ingame_intro", knt_state_hub_firstspawn);
+fsm_add_state("ingame_ending", knt_state_ingame_ending);
 // menus
 fsm_add_state("item_get", knt_state_item_get);
 fsm_add_state("item_assign", knt_state_item_assign);
-fsm_add_state("objective_powercell_deposit", knt_state_powercell_deposit);
 fsm_add_state("teleport_select", knt_state_teleport_select);
 // rooms
 fsm_add_state("hub_respawn", knt_state_hub_respawn);
 fsm_add_state("teleport", knt_state_teleport);
 fsm_add_state("room_move", knt_state_room_move);
 fsm_add_state("room_enter", knt_state_room_enter);
+// objective menu
+fsm_add_state("objective_main", knt_state_objective_menu);
+fsm_add_state("objective_powercell_deposit", knt_state_powercell_deposit);
+fsm_add_state("objective_item_relocate_select_item", knt_state_item_relocate_select_item);
+fsm_add_state("objective_item_relocate_select_room", knt_state_item_relocate_select_room);
 // paused
 fsm_add_state("paused_main", knt_state_paused);
 fsm_add_state("paused_settings", knt_state_paused_settings);
+fsm_add_state("paused_settings_deadzone", knt_state_paused_settings_deadzone);
 fsm_add_state("paused_respawn", knt_state_paused_respawn);
 fsm_add_state("paused_exit", knt_state_paused_exit);
+// debug menu
+fsm_add_state("debug_main", knt_state_debug);
+fsm_add_state("debug_roomdata", knt_state_debug_roomdata);
+fsm_add_state("debug_keylayout", knt_state_debug_keylayout);
+fsm_add_state("debug_impulse101", knt_state_debug_toggleallpowerup);
+fsm_add_state("debug_impulse102", knt_state_debug_incrementobjective);
+fsm_add_state("debug_impulse103", knt_state_debug_killplayer);
+fsm_add_state("debug_impulse104", knt_state_debug_upgradekeys);
+// fsm_add_state("debug_giveitem", knt_state_debug_giveitem);
+// fsm_add_state("debug_teleport_to", knt_state_debug_teleport_to);
 fsm_set("init");
 
 /// Required objects
@@ -115,6 +137,9 @@ ui_draw_text_format_init();
 
 /// Set font
 draw_set_font(fntGame);
+
+/// Detect keyslot/inventory layout
+ui_keyslot_display_layout_detect();
 
 </string>
           </argument>
@@ -143,8 +168,10 @@ global.gameUIZoom = 1.0;
 
 global.gameWid = 400;
 global.gameHei = 300;
-global.gameTargetWid = 512;
-global.gameTargetHei = 384;
+global.gameTargetWid = 400;
+global.gameTargetHei = 300;
+global.gameTargetUIWid = 1024;
+global.gameTargetUIHei = 768;
 
 /// Window resolution
 global.winWid = window_get_width();
@@ -173,9 +200,18 @@ global.winCenterY = global.winHei * 0.5;
           <argument>
             <kind>1</kind>
             <string>/// Game visual
+global.postprocessUnpotimized = false;
 global.postprocessSupport = false;
 global.postprocess = true;
+
+// surfaces that holds screen data (before applying the FX)
 global.surfScreen = surface_create(window_get_width(), window_get_height());
+
+// surfaces that holds the result of CRT-like filter effect
+global.surfPP_SCREEN = surface_create(window_get_width(), window_get_height());
+
+// surfaces that holds the result of CRT distort &amp; border
+global.surfPP_CRT = surface_create(window_get_width(), window_get_height());
 
 </string>
           </argument>
@@ -226,16 +262,66 @@ transitionTimeDefault = room_speed * 0.2;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>/// Ingame vars
+            <string>/// State vars
 /// Game physics &amp; stuffs
 global.isPhysicsPaused = false;
+
+/// Initialization / bootup
+initReadingRoomCurrent = 0;
+initIsReadingRooms = true;
 
 /// Intro cutscene state
 introCutsceneIdx = 0;
 introCutsceneWaitFrames = 30;
 introCutsceneReady = false;
 
+/// Ending cutscene state
+endingCutsceneIdx = 0;
+endingCutsceneWaitFrames = 30;
+endingCutsceneReady = false;
+
 /// Ingame state
+// First enter cutscene
+enum eINGAMEINTRO_STATE
+{
+    SHOWMSG = 0,
+    DEPLOY,
+    DONE
+}
+ingameIntroCutsceneState = eINGAMEINTRO_STATE.SHOWMSG;
+ingameIntroCutsceneStateCtr = 0;
+ingameIntroCutsceneMsgFrames = room_speed * 4.0;
+ingameIntroCutsceneDeployWaitFrames = room_speed * 1.0;
+
+// Ingame ending cutscene
+enum eINGAMEENDING_STATE
+{
+    SHOWMSG1 = 0,
+    SHOWMSG2,
+    SHOWSCREEN,
+    FADESCREEN,
+    DONE,
+}
+ingameEndingCutsceneState = eINGAMEENDING_STATE.SHOWMSG1;
+ingameEndingCutsceneStateCtr = 0;
+ingameEndingCutsceneMsgFrames = room_speed * 5.0;
+ingameEndingCutsceneFadeFrames = room_speed * 2.0;
+
+// Tutorial
+enum eTUTORIAL_STATE
+{
+    MOVE = 0,
+    INTERACT,
+    ITEMS,
+    DEPOSIT,
+    DONE
+}
+ingameTutorialInProgress = false;
+ingameTutorialState      = eTUTORIAL_STATE.MOVE;
+
+ingameTutorialMoveCtr = 0;
+ingameTutorialMoveCtrMax = 32 * 4; // 4 blocks
+
 // Room transition
 ingameRoomTransitionRequest = false;
 ingameRoomTransitionSource  = rm_hub;
@@ -250,11 +336,23 @@ ingameItemPickupType    = eITEM.NONE;
 // Item assign
 ingameItemAssignItemType    = eITEM.NONE;
 ingameItemAssignSelected    = false; // key slot selected?
-ingameItemAssignSelectedIdx = 0; // index of key slot that has been selected
+ingameItemAssignSelectedSlotID = 0; // string ID of key slot that has been selected
 
-// Powercell select
-ingamePowercellDepositRequest       = false;
-ingamePowercellDepositSelectedIdx   = 0;
+/// Control station interaction
+ingameObjectiveInteractionRequest = false;
+ingameObjectiveInteractionSelectedSlotID = 0;
+
+/// Item relocation
+itemRelocateSlotIsPicked  = false;
+itemRelocateSlotSelected  = "";
+// room selection
+itemRelocateRoomIsSelecting  = false;
+itemRelocateRoomCurrentIdx   = 0;
+itemRelocateRoomCurrent      = room_first;
+itemRelocateRoomCurrentData  = undefined;
+itemRelocateRoomCurrentItems = ds_list_create();
+itemRelocateRoomCurrentItemsAvailable = ds_list_create();
+itemRelocateRoomCurrentItemSelectedIdx = 0;
 
 // Ending
 ingameEndingRequest = false;
@@ -266,6 +364,17 @@ ingameTeleportSelectIdx     = 0;
 
 // Teleport
 ingameTeleportDest = rm_hub;
+
+/// Deadzone settings state
+enum eSETTINGS_DEADZONE_STATE
+{
+    TEST = 0,
+    ADJUST,
+    CONFIRM
+}
+settingsDeadzoneAdjustState = eSETTINGS_DEADZONE_STATE.TEST;
+settingsDeadzoneOld = 0;
+settingsDeadzoneNew = 0;
 </string>
           </argument>
         </arguments>
@@ -297,6 +406,10 @@ if (objectInitialized)
     /// FSM
     fsm_destroy();
     
+    /// Item relocate
+    ds_list_destroy(itemRelocateRoomCurrentItems);
+    ds_list_destroy(itemRelocateRoomCurrentItemsAvailable);
+    
     /// Format system
     ui_draw_text_format_init();
 }
@@ -326,13 +439,25 @@ if (objectInitialized)
 if ((!surface_exists(global.surfScreen) || (surface_get_width(global.surfScreen) != window_get_width() || surface_get_height(global.surfScreen) != window_get_height())) &amp;&amp;
     (window_get_width() != 0 &amp;&amp; window_get_height() != 0))
 {
-    // destroy pre-existing surface
+    // destroy pre-existing surfaces
     if (surface_exists(global.surfScreen))
         surface_free(global.surfScreen);
-        
+    if (surface_exists(global.surfPP_CRT))
+        surface_free(global.surfPP_CRT);
+    if (surface_exists(global.surfPP_SCREEN))
+        surface_free(global.surfPP_SCREEN);
+    
     // make a new one
     global.surfScreen = surface_create(window_get_width(), window_get_height());
+    global.surfPP_CRT = surface_create(window_get_width(), window_get_height());
+    global.surfPP_SCREEN = surface_create(window_get_width(), window_get_height());
 }
+
+if (!surface_exists(global.surfPP_CRT))
+    global.surfPP_CRT = surface_create(window_get_width(), window_get_height());
+
+if (!surface_exists(global.surfPP_SCREEN))
+    global.surfPP_SCREEN = surface_create(window_get_width(), window_get_height());
 </string>
           </argument>
         </arguments>
@@ -356,7 +481,6 @@ if ((!surface_exists(global.surfScreen) || (surface_get_width(global.surfScreen)
           <argument>
             <kind>1</kind>
             <string>/// Update FSM
-fsm_update();
 
 </string>
           </argument>
@@ -410,6 +534,8 @@ if (transitionIsHappening)
     }
 }
 
+fsm_update();
+
 </string>
           </argument>
         </arguments>
@@ -436,6 +562,9 @@ if (global.postprocessSupport)
     global.postprocess ^= keyboard_check_pressed(vk_f1);
 else
     global.postprocess = false;
+    
+/// Toggle debug build info by pressing F2
+global.debugDisplayBuildStr ^= keyboard_check_pressed(vk_f2);
 
 </string>
           </argument>
@@ -462,9 +591,8 @@ var _currentwid = window_get_width();
 var _currenthei = window_get_height();
 
 // Update the closest zoom
-var _minratio   = min(_currentwid / global.gameTargetWid, _currenthei / global.gameTargetHei);
-global.gameZoom = max(min(round(_currentwid / global.gameTargetWid), round(_currenthei / global.gameTargetHei)), 2.0);
-global.gameUIZoom = 0.5 * _minratio;
+global.gameZoom   = max(min(round(_currentwid / global.gameTargetWid), round(_currenthei / global.gameTargetHei)), 2.0);
+global.gameUIZoom = min(_currentwid / global.gameTargetUIWid, _currenthei / global.gameTargetUIHei);
 
 // Update the scaled zoom
 var _scalewid = floor(_currentwid / global.gameZoom);
@@ -594,78 +722,167 @@ var _winh = window_get_height();
 if (global.postprocess)
 {
     /// draw with filters applied
-    // background
-    draw_clear(0);
     
-    var _surfw = surface_get_width(global.surfScreen);
-    var _surfh = surface_get_height(global.surfScreen);
-    
-    var _noise      = sprite_get_texture(texBluenoise, 0);
-    var _rainbow    = sprite_get_texture(texRainbowTable, 0);
-    
-    // CRT filter : make temp. surface to hold the resulting CRT'd screen
-    texture_set_interpolation(true);
-    var _crtsurf = surface_create(_surfw, _surfh);
-    /*
-    surface_set_target(_crtsurf);
-    shader_set(shd_postprocessing_camscreen);
-        texture_set_stage(shader_get_sampler_index(shd_postprocessing_camscreen, "uTexNoise"), _noise);
+    /// Old method : not so efficient
+    if (global.postprocessUnpotimized)
+    {
+        // background
+        draw_clear(0);
         
-        draw_clear_alpha(0, 0);
-        draw_surface_stretched(global.surfScreen, 0, 0, surface_get_width(_smallsurf), surface_get_height(_smallsurf));
-    shader_reset();
-    surface_reset_target();
-    */
-    shader_set(shd_postprocessing);
-        // texture_set_stage(shader_get_sampler_index(shd_postprocessing, "uTexDownscaledScreen"), surface_get_texture(_smallsurf));
-        texture_set_stage(shader_get_sampler_index(shd_postprocessing, "uTexBluenoise"), _noise);
-        texture_set_stage(shader_get_sampler_index(shd_postprocessing, "uTexRainbow"), _rainbow);
-        shader_set_uniform_f(shader_get_uniform(shd_postprocessing, "uTime"), current_time * 0.001);
-        shader_set_uniform_f(shader_get_uniform(shd_postprocessing, "uScreenTexelSize"), 1 / _surfw, 1 / _surfh);
-        shader_set_uniform_f(shader_get_uniform(shd_postprocessing, "uBluenoiseTexelSize"), texture_get_texel_width(_noise), texture_get_texel_height(_noise));
+        var _surfw = surface_get_width(global.surfScreen);
+        var _surfh = surface_get_height(global.surfScreen);
         
-        // animate transition
+        var _noise      = sprite_get_texture(texBluenoise, 0);
+        var _rainbow    = sprite_get_texture(texRainbowTable, 0);
+        
+        // CRT filter : make temp. surface to hold the resulting CRT'd screen
+        texture_set_interpolation(true);
+        var _crtsurf = surface_create(_surfw, _surfh);
+        
+        shader_set(shd_postprocessing);
+            // texture_set_stage(shader_get_sampler_index(shd_postprocessing, "uTexDownscaledScreen"), surface_get_texture(_smallsurf));
+            texture_set_stage(shader_get_sampler_index(shd_postprocessing, "uTexBluenoise"), _noise);
+            texture_set_stage(shader_get_sampler_index(shd_postprocessing, "uTexRainbow"), _rainbow);
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing, "uTime"), current_time * 0.001);
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing, "uScreenTexelSize"), 1 / _surfw, 1 / _surfh);
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing, "uBluenoiseTexelSize"), texture_get_texel_width(_noise), texture_get_texel_height(_noise));
+            
+            // animate transition
+            if (transitionIsHappening)
+            {
+                if (transitionIsFadeout)
+                {
+                    var _screensqueezeamp = 0.8;
+                    var _transitioninterp = interp_weight(transitionCtr, transitionTime, 2.0, 1.5);
+                    // _transitioninterp = 1.0 - _transitioninterp;
+                    var _screenwid  = _winw * (1.0 + _transitioninterp * _screensqueezeamp);
+                    var _screenhei  = _winh * (1.0 - _transitioninterp * _screensqueezeamp);
+                    var _screeny    = lerp(_winh * 0.5, 0.0, _transitioninterp);
+                    var _screentint = make_color_hsv(200, _transitioninterp * 255, _transitioninterp * 255);
+                    draw_surface_stretched_ext(global.surfScreen, (_winw -_screenwid) * 0.5, _screeny, _screenwid, _screenhei, _screentint, 1.0);
+                }
+                else
+                {
+                    var _screensqueezeamp = 0.4;
+                    var _transitioninterp = interp_weight(transitionCtr, transitionTime, 1.5, 2.0);
+                    
+                    var _screenwid  = _winw * ((1.0 + _screensqueezeamp) - _transitioninterp * _screensqueezeamp);
+                    var _screenhei  = _winh * ((1.0 - _screensqueezeamp) + _transitioninterp * _screensqueezeamp);
+                    var _screeny    = lerp(_winh, 0.0, _transitioninterp);
+                    var _screentint = make_color_hsv(128, _transitioninterp * 255, _transitioninterp * 255);
+                    draw_surface_stretched_ext(global.surfScreen, (_winw -_screenwid) * 0.5, _screeny, _screenwid, _screenhei, _screentint, 1.0);
+                }
+            }
+            else
+            {
+                draw_surface_stretched(global.surfScreen, 0, 0, _winw, _winh);
+            }
+            
+            // draw_surface_stretched(global.surfScreen, 0, 0, _winw, _winh);
+        shader_reset();
+        
+        
+        // Draw the resulting surface
+        // draw_surface_stretched(_crtsurf, 0, 0, _winw, _winh);
+        
+        texture_set_interpolation(false);
+        
+        // Free temp. surfaces
+        surface_free(_crtsurf);
+    }
+    else
+    {
+        // background
+        draw_clear(0);
+        
+        var _surfw   = surface_get_width(global.surfScreen);
+        var _surfh   = surface_get_height(global.surfScreen);
+        var _noise   = sprite_get_texture(texBluenoise, 0);
+        var _rainbow = sprite_get_texture(texRainbowTable, 0);
+        var _shadowmask = sprite_get_texture(texCRTShadowmask, 0);
+        // var _shadowmaskwid = 1 / 18;
+        
+        // First pass : CRT filter
+        texture_set_interpolation(true);
+
+        var _screenwid  = _surfw;
+        var _screenhei  = _surfh;
+        var _screeny    = 0;
+        var _screentint = c_white;
         if (transitionIsHappening)
         {
             if (transitionIsFadeout)
             {
                 var _screensqueezeamp = 0.8;
                 var _transitioninterp = interp_weight(transitionCtr, transitionTime, 2.0, 1.5);
-                // _transitioninterp = 1.0 - _transitioninterp;
-                var _screenwid  = _winw * (1.0 + _transitioninterp * _screensqueezeamp);
-                var _screenhei  = _winh * (1.0 - _transitioninterp * _screensqueezeamp);
-                var _screeny    = lerp(_winh * 0.5, 0.0, _transitioninterp);
+                
+                var _screenwid  = _surfw * (1.0 + _transitioninterp * _screensqueezeamp);
+                var _screenhei  = _surfh * (1.0 - _transitioninterp * _screensqueezeamp);
+                var _screeny    = lerp(_surfh * 0.5, 0.0, _transitioninterp);
                 var _screentint = make_color_hsv(200, _transitioninterp * 255, _transitioninterp * 255);
-                draw_surface_stretched_ext(global.surfScreen, (_winw -_screenwid) * 0.5, _screeny, _screenwid, _screenhei, _screentint, 1.0);
             }
             else
             {
                 var _screensqueezeamp = 0.4;
                 var _transitioninterp = interp_weight(transitionCtr, transitionTime, 1.5, 2.0);
                 
-                var _screenwid  = _winw * ((1.0 + _screensqueezeamp) - _transitioninterp * _screensqueezeamp);
-                var _screenhei  = _winh * ((1.0 - _screensqueezeamp) + _transitioninterp * _screensqueezeamp);
-                var _screeny    = lerp(_winh, 0.0, _transitioninterp);
+                var _screenwid  = _surfw * ((1.0 + _screensqueezeamp) - _transitioninterp * _screensqueezeamp);
+                var _screenhei  = _surfh * ((1.0 - _screensqueezeamp) + _transitioninterp * _screensqueezeamp);
+                var _screeny    = lerp(_surfh, 0.0, _transitioninterp);
                 var _screentint = make_color_hsv(128, _transitioninterp * 255, _transitioninterp * 255);
-                draw_surface_stretched_ext(global.surfScreen, (_winw -_screenwid) * 0.5, _screeny, _screenwid, _screenhei, _screentint, 1.0);
             }
         }
-        else
-        {
-            draw_surface_stretched(global.surfScreen, 0, 0, _winw, _winh);
-        }
         
-        // draw_surface_stretched(global.surfScreen, 0, 0, _winw, _winh);
-    shader_reset();
-    
-    
-    // Draw the resulting surface
-    // draw_surface_stretched(_crtsurf, 0, 0, _winw, _winh);
-    
-    texture_set_interpolation(false);
-    
-    // Free temp. surfaces
-    surface_free(_crtsurf);
+        var _surfpp_screenw = surface_get_width(global.surfPP_SCREEN);
+        var _surfpp_screenh = surface_get_height(global.surfPP_SCREEN);
+        surface_set_target(global.surfPP_SCREEN);
+        shader_set(shd_postprocessing_screeneffect);
+            texture_set_stage(shader_get_sampler_index(shd_postprocessing_screeneffect, "uTexNoise"), _noise);
+            texture_set_stage(shader_get_sampler_index(shd_postprocessing_screeneffect, "uTexRainbow"), _rainbow);
+            texture_set_stage(shader_get_sampler_index(shd_postprocessing_screeneffect, "uTexShadowmask"), _shadowmask);
+            
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing_screeneffect, "uTime"), current_time * 0.001);
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing_screeneffect, "uShadowmaskIntensity"), 0.4);
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing_screeneffect, "uBrightness"), 0.23);
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing_screeneffect, "uContrast"), 1.0);
+            
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing_screeneffect, "uScreenTexelSize"), 1 / _surfw, 1 / _surfh);
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing_screeneffect, "uNoiseTexelSize"), texture_get_texel_width(_noise), texture_get_texel_height(_noise));
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing_screeneffect, "uShadowmaskTexelSize"), texture_get_texel_width(_shadowmask), texture_get_texel_height(_shadowmask));
+            
+            draw_surface_stretched(global.surfScreen, 0, 0, _surfpp_screenw, _surfpp_screenh);
+        shader_reset();
+        surface_reset_target();
+        
+        surface_set_target(global.surfPP_CRT);
+        shader_set(shd_postprocessing_camscreen);
+            texture_set_stage(shader_get_sampler_index(shd_postprocessing_camscreen, "uTexNoise"), _noise);
+            texture_set_stage(shader_get_sampler_index(shd_postprocessing_camscreen, "uTexRainbow"), _rainbow);
+            
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing_camscreen, "uTime"), current_time * 0.001);
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing_camscreen, "uScreenTexelSize"), 1 / _surfw, 1 / _surfh);
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing_camscreen, "uNoiseTexelSize"), texture_get_texel_width(_noise), texture_get_texel_height(_noise));
+        
+            draw_clear(0);
+            draw_surface_stretched_ext(global.surfPP_SCREEN, (_surfw -_screenwid) * 0.5, _screeny, _screenwid, _screenhei, _screentint, 1.0);
+        shader_reset();
+        surface_reset_target();
+        
+        // Draw the final surface
+        shader_set(shd_postprocessing_effects);
+            texture_set_stage(shader_get_sampler_index(shd_postprocessing_effects, "uTexNoise"), _noise);
+            texture_set_stage(shader_get_sampler_index(shd_postprocessing_effects, "uTexRainbow"), _rainbow);
+            
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing_effects, "uTime"), current_time * 0.001);
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing_effects, "uScreenTexelSize"), 1 / _winw, 1 / _winh);
+            shader_set_uniform_f(shader_get_uniform(shd_postprocessing_effects, "uNoiseTexelSize"), texture_get_texel_width(_noise), texture_get_texel_height(_noise));
+                
+            draw_surface_stretched(global.surfPP_CRT, 0, 0, _winw, _winh);
+        shader_reset();
+        
+        // Disable interpolation
+        texture_set_interpolation(false);
+    }
 }
 else
 {
@@ -726,104 +943,100 @@ else
           <argument>
             <kind>1</kind>
             <string>/// Draw the build info &amp; debug info
-draw_set_halign(2); draw_set_valign(0);
-var _str = global.debugBuildStr
-    + "#FPS : " + string(fps_real)
-    + "#INPUT : " + string(oInput.inputMethodCurrent) + "[" + oInput.inputMethodNameStr[@ oInput.inputMethodCurrent] + "] - DEVICE \#" + string(oInput.inputDevice);
-    
-if (oInput.inputMethodCurrent == eINPUT_METHOD.GAMEPAD)
+if (global.debugDisplayBuildStr)
 {
+    var _str = global.debugBuildStr
+        + "#FPS : " + string(fps_real);
     /*
-    _str += "# !!&gt; DEVICES : [";
-    for (var i=0; i&lt;ds_list_size(oInput.inputGamepadList); i++)
+        + "#ZOOM : " + string(global.gameZoom) + "#RESOLUTION : " + string(global.winWid) + ", " + string(global.winHei)
+        + "#INPUT : " + string(oInput.inputMethodCurrent) + "[" + oInput.inputMethodNameStr[@ oInput.inputMethodCurrent] + "] - DEVICE \#" + string(oInput.inputDevice);
+    
+    for (var i=0; i&lt;ds_list_size(oInput.invKeyslotsIDList); i++)
     {
-        var _pad = oInput.inputGamepadList[| i];
-        _str += string(_pad) + ", ";
+        var _keyslotid = oInput.invKeyslotsIDList[| i];
+        var _keyslotdata = oInput.invKeyslots[? _keyslotid];
+        _str += "#" + _keyslotid + " : " + string_concat_array(_keyslotdata[@ eINVKEY.KEYSTATE], '|');
     }
-    _str += "]";
-    
-    for (var i=0; i&lt;16; i++)
+    if (oInput.inputMethodCurrent == eINPUT_METHOD.GAMEPAD)
     {
-        _str += "# &gt; BTN " + string_format(i, 2, 0) + "] : " + string(gamepad_button_check(oInput.inputDevice, i));
-    }
-    
-    _str += "#===========================";
-    
-    for (var i=32769; i&lt;32789; i++)
-    {
-        _str += "# &gt; BTN " + string_format(i, 2, 0) + "] : " + string(gamepad_button_check(oInput.inputDevice, i));
+        var _centerx         = global.winCenterX, _centery = global.winCenterY;
+        var _gpaxissize      = 64 * global.gameUIZoom;
+        var _gpaxissticksize = 32 * global.gameUIZoom;
+        var _gpbuttonsize    = 16 * global.gameUIZoom;
+        var _gpbuttonmargin  = 32 * global.gameUIZoom;
+        var _gpinputx   = _centerx;
+        var _gpinputy   = global.winHei * 0.9;
+        var _gpaxisx    = _centerx - _gpaxissize - 16 * global.gameUIZoom;
+        var _gpbuttonx  = _centerx + _gpaxissize + 16 * global.gameUIZoom;
+        
+        // Draw stick
+        var _gpaxisstickx = _gpaxisx + oInput.inputH[@ eINPUT.HLD] * _gpaxissize;
+        var _gpaxissticky = _gpinputy + oInput.inputV[@ eINPUT.HLD] * _gpaxissize;
+        draw_set_halign(1); draw_set_valign(1);
+        draw_set_circle_precision(8);
+        draw_circle(_gpaxisx, _gpinputy, _gpaxissize, true);
+        draw_circle(_gpaxisstickx, _gpaxissticky, _gpaxissticksize, false);
+        ui_draw_text(_gpaxisstickx, _gpaxissticky, string_format(oInput.inputH[@ eINPUT.HLD], 8, 7) + "#" + string_format(oInput.inputV[@ eINPUT.HLD], 8, 7), 1, 0, c_orange, 1.0);
+        
+        // Draw ABXY button
+        draw_set_halign(1); draw_set_valign(1);
+        
+        // (A)
+        var _bx = _gpbuttonx;
+        var _by = _gpinputy + _gpbuttonmargin;
+        var _col = merge_colour(c_white, c_gray, oInput.inputKey1[@ eINPUT.HLD]);
+        draw_circle_colour(_bx, _by, _gpbuttonsize, _col, _col, false);
+        ui_draw_text(_bx, _by, "A", 1, 0, c_black, 1.0);
+        
+        // (B)
+        var _bx = _gpbuttonx + _gpbuttonmargin;
+        var _by = _gpinputy;
+        var _col = merge_colour(c_white, c_gray, oInput.inputKey2[@ eINPUT.HLD]);
+        draw_circle_colour(_bx, _by, _gpbuttonsize, _col, _col, false);
+        ui_draw_text(_bx, _by, "B", 1, 0, c_black, 1.0);
+        
+        // (X)
+        var _bx = _gpbuttonx - _gpbuttonmargin;
+        var _by = _gpinputy;
+        var _col = merge_colour(c_white, c_gray, oInput.inputKey3[@ eINPUT.HLD]);
+        draw_circle_colour(_bx, _by, _gpbuttonsize, _col, _col, false);
+        ui_draw_text(_bx, _by, "X", 1, 0, c_black, 1.0);
+        
+        // (Y)
+        var _bx = _gpbuttonx;
+        var _by = _gpinputy - _gpbuttonmargin;
+        var _col = merge_colour(c_white, c_gray, oInput.inputKey4[@ eINPUT.HLD]);
+        draw_circle_colour(_bx, _by, _gpbuttonsize, _col, _col, false);
+        ui_draw_text(_bx, _by, "Y", 1, 0, c_black, 1.0);
+        
+        // (Shoulder)
+        var _bx = _gpbuttonx + _gpbuttonmargin;
+        var _by = _gpinputy + _gpbuttonmargin;
+        var _col = merge_colour(c_white, c_gray, oInput.inputKey5[@ eINPUT.HLD]);
+        draw_circle_colour(_bx, _by, _gpbuttonsize, _col, _col, false);
+        ui_draw_text(_bx, _by, "S", 1, 0, c_black, 1.0);
+        
+        // Draw confirm / deny button
+        var _buttony = _gpinputy + _gpaxissize + 16;
+        
+        // (confirm)
+        var _bx = _gpinputx - _gpbuttonmargin;
+        var _by = _gpinputy + _gpaxissize;
+        var _col = merge_colour(c_white, c_gray, oInput.inputConfirm[@ eINPUT.HLD]);
+        draw_rectangle_colour(_bx - _gpbuttonsize, _by - 4, _bx + _gpbuttonsize, _by + 4, _col, _col, _col, _col, false);
+        
+        // (deny)
+        var _bx = _gpinputx + _gpbuttonmargin;
+        var _by = _gpinputy + _gpaxissize;
+        var _col = merge_colour(c_white, c_gray, oInput.inputDeny[@ eINPUT.HLD]);
+        draw_rectangle_colour(_bx - _gpbuttonsize, _by - 4, _bx + _gpbuttonsize, _by + 4, _col, _col, _col, _col, false);
     }
     */
-    var _centerx         = global.winCenterX, _centery = global.winCenterY;
-    var _gpaxissize      = 64;
-    var _gpaxissticksize = 16;
-    var _gpbuttonsize    = 16;
-    var _gpbuttonmargin  = 32;
-    var _gpinputx   = _centerx;
-    var _gpinputy   = global.winHei * 0.8;
-    var _gpaxisx    = _centerx - _gpaxissize - 16;
-    var _gpbuttonx  = _centerx + _gpaxissize + 16;
-    
-    // Draw stick
-    var _gpaxisstickx = _gpaxisx + oInput.inputH[@ eINPUT.HLD] * _gpaxissize;
-    var _gpaxissticky = _gpinputy + oInput.inputV[@ eINPUT.HLD] * _gpaxissize;
-    draw_set_circle_precision(8);
-    draw_circle(_gpaxisx, _gpinputy, _gpaxissize, true);
-    draw_circle(_gpaxisstickx, _gpaxissticky, _gpaxissticksize, false);
-    
-    // Draw ABXY button
-    var _currentgp = oInput.inputDevice;
-    draw_set_halign(1); draw_set_valign(1);
-    
-    // (A)
-    var _bx = _gpbuttonx;
-    var _by = _gpinputy + _gpbuttonmargin;
-    var _col = merge_colour(c_white, c_gray, gamepad_button_check(_currentgp, gp_face1));
-    draw_circle_colour(_bx, _by, _gpbuttonsize, _col, _col, false);
-    ui_draw_text(_bx, _by, "A", 1, 0, c_black, 1.0);
-    
-    // (B)
-    var _bx = _gpbuttonx + _gpbuttonmargin;
-    var _by = _gpinputy;
-    var _col = merge_colour(c_white, c_gray, gamepad_button_check(_currentgp, gp_face2));
-    draw_circle_colour(_bx, _by, _gpbuttonsize, _col, _col, false);
-    ui_draw_text(_bx, _by, "B", 1, 0, c_black, 1.0);
-    
-    // (X)
-    var _bx = _gpbuttonx - _gpbuttonmargin;
-    var _by = _gpinputy;
-    var _col = merge_colour(c_white, c_gray, gamepad_button_check(_currentgp, gp_face3));
-    draw_circle_colour(_bx, _by, _gpbuttonsize, _col, _col, false);
-    ui_draw_text(_bx, _by, "X", 1, 0, c_black, 1.0);
-    
-    // (Y)
-    var _bx = _gpbuttonx;
-    var _by = _gpinputy - _gpbuttonmargin;
-    var _col = merge_colour(c_white, c_gray, gamepad_button_check(_currentgp, gp_face4));
-    draw_circle_colour(_bx, _by, _gpbuttonsize, _col, _col, false);
-    ui_draw_text(_bx, _by, "Y", 1, 0, c_black, 1.0);
-    
-    // Draw confirm / deny button
-    var _buttony = _gpinputy + _gpaxissize + 16;
-    
-    // (confirm)
-    var _bx = _gpinputx - _gpbuttonmargin;
-    var _by = _gpinputy + _gpaxissize + 16;
-    var _col = merge_colour(c_white, c_gray, oInput.inputConfirm[@ eINPUT.HLD]);
-    draw_rectangle_colour(_bx - _gpbuttonsize, _by - 4, _bx + _gpbuttonsize, _by + 4, _col, _col, _col, _col, false);
-    
-    // (deny)
-    var _bx = _gpinputx + _gpbuttonmargin;
-    var _by = _gpinputy + _gpaxissize + 16;
-    var _col = merge_colour(c_white, c_gray, oInput.inputDeny[@ eINPUT.HLD]);
-    draw_rectangle_colour(_bx - _gpbuttonsize, _by - 4, _bx + _gpbuttonsize, _by + 4, _col, _col, _col, _col, false);
+    // + "#STATE : " + fsmState
+    draw_set_halign(2); draw_set_valign(0);
+    ui_draw_text(global.winWid - 7, 9, _str, 1, 0, c_black, 1.0);
+    ui_draw_text(global.winWid - 8, 8, _str, 1, 0, c_white, 1.0);
 }
-    
-// + "#STATE : " + fsmState
-// + "#UI ZOOM : " + string(global.gameUIZoom) + "#RESOLUTION : " + string(global.winWid) + ", " + string(global.winHei);
-
-ui_draw_text(global.winWid - 7, 9, _str, 1, 0, c_black, 1.0);
-ui_draw_text(global.winWid - 8, 8, _str, 1, 0, c_white, 1.0);
 </string>
           </argument>
         </arguments>

@@ -21,30 +21,31 @@ if (vy < velGravMax && !contactB)
 mask_index = bboxPlayer; // Set mask
 ent_update();
 
-// Turn around if there's wall in front of the enemy
-if (colL)
+// Turn around if there's wall in front of the enemy or there is no ground ahead
+var _frontposx = lerp(bbox_left, bbox_right, moveDir * 0.5 + 0.5) + 16 * moveDir;
+var _frontposy = bbox_bottom + 16;
+var _groundahead = position_meeting(_frontposx, _frontposy, oTileCollision);
+if (contactB && !_groundahead)
 {
-    moveDir = 1;
+    moveDir *= -1;
 }
-else if (colR)
+else
 {
-    moveDir = -1;
+    if (colL)
+    {
+        moveDir = 1;
+    }
+    else if (colR || !_groundahead)
+    {
+        moveDir = -1;
+    }
 }
 
 // Check vs projectile
-var _projectile = instance_place(x, y, oPlayerAttack);
-if (instance_exists(_projectile))
-{
-    fsm_set("hurt");
-    
-    // apply damage
-    hp -= _projectile.damage;
-    
-    // apply knockback
-    vx = lengthdir_x(_projectile.knockback, _projectile.image_angle);
-    vy = lengthdir_y(_projectile.knockback, _projectile.image_angle) - _projectile.knockback;
-}
-else if (place_meeting(x, y, oPlayer)) // Check if player is colliding
+var _hurt = enemy_update_damage();
+
+// Check if player is colliding
+if (!_hurt && place_meeting(x, y, oPlayer))
 {
     var _dir = sign(oPlayer.x - x);
     if (_dir != 0)
@@ -108,19 +109,9 @@ ent_update();
 vx *= velDamp;
 
 // Check vs projectile
-var _projectile = instance_place(x, y, oPlayerAttack);
-if (instance_exists(_projectile))
-{
-    fsm_set("hurt");
-    
-    // apply damage
-    hp -= _projectile.damage;
-    
-    // apply knockback
-    vx = lengthdir_x(_projectile.knockback, _projectile.image_angle);
-    vy = lengthdir_y(_projectile.knockback, _projectile.image_angle) - _projectile.knockback;
-}
-else
+var _hurt = enemy_update_damage();
+
+if (!_hurt)
 {
     /// Check attack end
     if (fsmStateCtr > attackFrames)

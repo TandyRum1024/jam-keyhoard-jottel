@@ -1,41 +1,30 @@
 #define inv_key_add
-/// inv_key_add(_keystate, _available, _id)
-var _keystate = argument0, _available = argument1, _id = argument2;
+/// inv_key_add(_id, _keystate)
+var _id = argument0, _keystate = argument1;
 
 var _data = -1;
-_data[eINVKEY.KEY]          = _keystate;
-_data[eINVKEY.AVAILABLE]    = _available;
-_data[eINVKEY.ID]           = _id;
+_data[eINVKEY.KEYSTATE]     = _keystate;
+_data[eINVKEY.AVAILABLE]    = false;
 _data[eINVKEY.ITEM]         = eITEM.NONE;
+oInput.invKeyslots[? _id] = _data;
 
-ds_list_add(oGamevars.invSlots, _data);
+ds_list_add(invKeyslotsIDList, _id);
 
 #define inv_key_get
-/// inv_key_get(_keycode)
-var _keycode = argument0;
-
-var _data = noone;
-var _slots = oGamevars.invSlots;
-for (var i=0; i<ds_list_size(_slots); i++)
-{
-    var _data = _slots[| i];
-    if (_data[@ eINVKEY.ID] == _keycode)
-        return _data;
-}
-
+/// inv_key_get(_id)
+var _id = argument0;
+var _data = oInput.invKeyslots[? _id];
 return _data;
 
+#define inv_key_get_keystate
+/// inv_key_get_keystate(_id)
+var _id = argument0;
+var _data       = oInput.invKeyslots[? _id];
+var _keystate   = _data[@ eINVKEY.KEYSTATE];
+return _keystate;
+
 #define inv_key_set_available
-/// inv_key_set_available(_keycode, _available)
-var _keycode = argument0, _available = argument1;
-var _key = inv_key_get(_keycode);
-_key[@ eINVKEY.AVAILABLE] = _available;
-
-#define inv_add_item
-/// inv_add_item(_item, _available)
-var _item = argument0, _available = argument1;
-var _data = -1;
-_data[eINV.ITEM] = _item;
-_data[eINV.AVAILABLE] = _available;
-
-ds_list_add(oGamevars.invItems, _data);
+/// inv_key_set_available(_id, _available)
+var _id = argument0, _available = argument1;
+var _data = inv_key_get(_id);
+_data[@ eINVKEY.AVAILABLE] = _available;

@@ -3,6 +3,27 @@
   <Configs name="configs">
     <Config>Configs\Default</Config>
   </Configs>
+  <datafiles number="1" name="datafiles">
+    <datafiles number="1" name="ui">
+      <datafile>
+        <name>keyslotlayout.json</name>
+        <exists>-1</exists>
+        <size>0</size>
+        <exportAction>2</exportAction>
+        <exportDir></exportDir>
+        <overwrite>0</overwrite>
+        <freeData>-1</freeData>
+        <removeEnd>0</removeEnd>
+        <store>0</store>
+        <ConfigOptions>
+          <Config name="Default">
+            <CopyToMask>9223372036854775807</CopyToMask>
+          </Config>
+        </ConfigOptions>
+        <filename>keyslotlayout.json</filename>
+      </datafile>
+    </datafiles>
+  </datafiles>
   <NewExtensions/>
   <sounds name="sound">
     <sounds name="snd">
@@ -39,10 +60,19 @@
       <sprite>sprites\sprPlayerOld</sprite>
       <sprite>sprites\sprPlayerIdle</sprite>
       <sprite>sprites\sprPlayerIdleCharge</sprite>
+      <sprite>sprites\sprPlayerJump</sprite>
+      <sprite>sprites\sprPlayerJumpCharge</sprite>
+      <sprite>sprites\sprPlayerJumpChargeUp</sprite>
+      <sprite>sprites\sprPlayerJumpChargeDown</sprite>
       <sprite>sprites\sprPlayerMove</sprite>
       <sprite>sprites\sprPlayerMoveCharge</sprite>
+      <sprite>sprites\sprPlayerMoveChargeUp</sprite>
       <sprite>sprites\sprPlayerMoveSprint</sprite>
+      <sprite>sprites\sprPlayerMoveSprintCharge</sprite>
+      <sprite>sprites\sprPlayerMoveSprintChargeUp</sprite>
       <sprite>sprites\sprPlayerMoveCrawl</sprite>
+      <sprite>sprites\sprPlayerMoveCrawlCharge</sprite>
+      <sprite>sprites\sprPlayerMoveCrawlChargeUp</sprite>
       <sprite>sprites\sprPlayerHurt</sprite>
       <sprite>sprites\sprPlayerKick</sprite>
       <sprite>sprites\sprPlayerInteract</sprite>
@@ -51,10 +81,26 @@
       <sprite>sprites\sprFXSpark</sprite>
       <sprite>sprites\sprFXPomf</sprite>
     </sprites>
+    <sprites name="UI">
+      <sprite>sprites\sprUIHealth</sprite>
+      <sprite>sprites\sprUICutsceneBegin</sprite>
+      <sprite>sprites\sprUICutsceneEnd</sprite>
+      <sprite>sprites\sprUICutsceneBeginOld</sprite>
+      <sprite>sprites\sprUIKeyslotKey</sprite>
+      <sprite>sprites\sprUIKeyslotButton</sprite>
+      <sprite>sprites\sprUIKeyslotKeyLong</sprite>
+      <sprite>sprites\sprUIKeyslotButtonLong</sprite>
+      <sprite>sprites\sprUIMapIcons</sprite>
+      <sprite>sprites\sprUIInputIconsNone</sprite>
+      <sprite>sprites\sprUIInputIconsKeyboard</sprite>
+      <sprite>sprites\sprUIInputIconsKeyboardLong</sprite>
+      <sprite>sprites\sprUIInputIconsGamepad</sprite>
+      <sprite>sprites\sprUIInputIconsGamepadLong</sprite>
+      <sprite>sprites\sprUIInputMethodIcons</sprite>
+    </sprites>
     <sprite>sprites\texBluenoise</sprite>
     <sprite>sprites\texRainbowTable</sprite>
-    <sprite>sprites\sprUIHealth</sprite>
-    <sprite>sprites\sprUICutsceneBegin</sprite>
+    <sprite>sprites\texCRTShadowmask</sprite>
     <sprite>sprites\sprBlank</sprite>
     <sprite>sprites\sprWeaponAttack</sprite>
     <sprite>sprites\sprEnemy</sprite>
@@ -85,12 +131,14 @@
       <script>scripts\plr_update_damage.gml</script>
     </scripts>
     <scripts name="Enemy">
+      <script>scripts\enemy_update_damage.gml</script>
       <script>scripts\enemy_state_normal.gml</script>
       <script>scripts\enemy_anim_move.gml</script>
     </scripts>
     <scripts name="Control">
       <script>scripts\knt_state_normal.gml</script>
       <script>scripts\knt_transition.gml</script>
+      <script>scripts\knt_relocate_select_room.gml</script>
     </scripts>
     <scripts name="Animation">
       <script>scripts\interp_weight.gml</script>
@@ -100,8 +148,10 @@
       <scripts name="screen_elements">
         <script>scripts\ui_draw_item_info.gml</script>
         <script>scripts\ui_draw_message.gml</script>
+        <script>scripts\ui_draw_subtitle.gml</script>
         <script>scripts\ui_draw_hp.gml</script>
         <script>scripts\ui_draw_footer.gml</script>
+        <script>scripts\ui_draw_keyslots.gml</script>
       </scripts>
       <scripts name="rudiments">
         <script>scripts\ui_draw_text.gml</script>
@@ -109,9 +159,13 @@
         <script>scripts\ui_draw_rect.gml</script>
         <script>scripts\ui_draw_rect_text.gml</script>
       </scripts>
+      <script>scripts\ui_load_keyslot_display_layout.gml</script>
+      <script>scripts\ui_get_input_icon.gml</script>
       <script>scripts\ui_show_message.gml</script>
+      <script>scripts\ui_show_subtitle.gml</script>
       <script>scripts\ui_ingame.gml</script>
     </scripts>
+    <script>scripts\fx_gamepad_vibration.gml</script>
     <script>scripts\fx_camera_shake.gml</script>
     <script>scripts\fx_emit_dust.gml</script>
     <script>scripts\sfx_init.gml</script>
@@ -120,6 +174,7 @@
     <script>scripts\makearray.gml</script>
     <script>scripts\string_escape_newline.gml</script>
     <script>scripts\string_trim_whitespace.gml</script>
+    <script>scripts\string_concat_array.gml</script>
     <script>scripts\singleton_update.gml</script>
     <script>scripts\input_check_gamepad_anybutton.gml</script>
     <script>scripts\inv_key_add.gml</script>
@@ -128,6 +183,8 @@
   <shaders name="shaders">
     <shader type="GLSLES">shaders\shd_postprocessing.shader</shader>
     <shader type="GLSLES">shaders\shd_postprocessing_camscreen.shader</shader>
+    <shader type="GLSLES">shaders\shd_postprocessing_screeneffect.shader</shader>
+    <shader type="GLSLES">shaders\shd_postprocessing_effects.shader</shader>
   </shaders>
   <fonts name="fonts">
     <font>fonts\fntGame</font>

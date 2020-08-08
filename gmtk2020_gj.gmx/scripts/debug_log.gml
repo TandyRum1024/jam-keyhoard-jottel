@@ -4,10 +4,11 @@ var _str = "";
 for (var i=0; i<argument_count; i++)
 {
     var _ent = argument[i];
-    if (is_array(_ent))
-        _str += _ent;
-    else
-        _str += string(_ent);
+    _str += string(_ent);
+    // if (is_array(_ent))
+    //     _str += string(_ent);
+    // else
+    //     _str += string(_ent);
 }
 
 show_debug_message(_str);

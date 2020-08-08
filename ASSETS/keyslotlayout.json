@@ -1,0 +1,102 @@
+{
+    "keyboard" : {
+        "config" : {
+            "name" : "KEYBOARD",
+            "spriteset" : "keyboard",
+            "gridw" : 2,
+            "gridh" : 3
+        },
+        "inputs" : {
+            "BTN1" : {
+                "display" : "Z",
+                "gridx" : 0,
+                "gridy" : 1,
+                "offx" : 16,
+                "offy" : 0,
+                "spridx" : 0
+            },
+            "BTN2" : {
+                "display" : "X",
+                "gridx" : 1,
+                "gridy" : 1,
+                "offx" : 16,
+                "offy" : 0,
+                "spridx" : 0
+            },
+            "BTN3" : {
+                "display" : "A",
+                "gridx" : 0,
+                "gridy" : 0,
+                "offx" : 0,
+                "offy" : 0,
+                "spridx" : 0
+            },
+            "BTN4" : {
+                "display" : "S",
+                "gridx" : 0,
+                "gridy" : 0,
+                "offx" : 0,
+                "offy" : 0,
+                "spridx" : 0
+            },
+            "BTN5" : {
+                "display" : "SHIFT",
+                "gridx" : 0,
+                "gridy" : 3,
+                "offx" : 0,
+                "offy" : 0,
+                "spridx" : 1
+            }
+        }
+    },
+    "gamepad_xbox" : {
+        "config" : {
+            "name" : "KEYBOARD",
+            "spriteset" : "keyboard",
+            "gridw" : 2,
+            "gridh" : 3
+        },
+        "inputs" : {
+            "BTN1" : {
+                "display" : "Z",
+                "gridx" : 0,
+                "gridy" : 1,
+                "offx" : 16,
+                "offy" : 0,
+                "spridx" : 0
+            },
+            "BTN2" : {
+                "display" : "X",
+                "gridx" : 1,
+                "gridy" : 1,
+                "offx" : 16,
+                "offy" : 0,
+                "spridx" : 0
+            },
+            "BTN3" : {
+                "display" : "A",
+                "gridx" : 0,
+                "gridy" : 0,
+                "offx" : 0,
+                "offy" : 0,
+                "spridx" : 0
+            },
+            "BTN4" : {
+                "display" : "S",
+                "gridx" : 0,
+                "gridy" : 0,
+                "offx" : 0,
+                "offy" : 0,
+                "spridx" : 0
+            },
+            "BTN5" : {
+                "display" : "SHIFT",
+                "gridx" : 0,
+                "gridy" : 3,
+                "offx" : 0,
+                "offy" : 0,
+                "spridx" : 1
+            }
+        }
+    }
+}

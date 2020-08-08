@@ -18,6 +18,9 @@ draw_set_halign(0); draw_set_valign(0);
 var _strdrawx = _x - (_strwid * _halign * 0.5);
 var _strdrawy = _y - (_strhei * _valign * 0.5);
 var _strstepy = _em;
+
+// draw_circle_colour(_strdrawx, _strdrawy, 2, c_red, c_red, false);
+
 for (var i=0; i<ds_list_size(_strtokens); i++)
 {
     var _currenttoken = _strtokens[| i];
@@ -32,19 +35,33 @@ for (var i=0; i<ds_list_size(_strtokens); i++)
             break;
             
         case eSTRTOKEN_TYPE.INPUT:
-            var _currentinput   = "[" + _currenttoken[@ eSTRTOKEN.DATA] + "]";
-            var _currentwid     = string_width(_currentinput);
-            ui_draw_text(_strdrawx, _strdrawy, _currentinput, _scale, 0, c_orange, _alpha);
+            // var _currentinput   = "[" + _currenttoken[@ eSTRTOKEN.DATA] + "]";
+            var _inputspr   = ui_get_input_icon(_currenttoken[@ eSTRTOKEN.DATA]);
+            var _currentwid = 0;
+            if (is_array(_inputspr))
+            {
+                var _spr = _inputspr[@ 0];
+                var _idx = _inputspr[@ 1];
+                _currentwid = sprite_get_width(_spr) + 1;
+                draw_sprite_ext(_spr, _idx, _strdrawx, _strdrawy, _scale, _scale, 0, c_orange, _alpha);
+            }
+            else
+            {
+                _currentinput = "[" + _currenttoken[@ eSTRTOKEN.DATA] + "]";
+                _currentwid   = string_width(_currentinput);
+                ui_draw_text(_strdrawx, _strdrawy, _currentinput, _scale, 0, c_orange, _alpha);
+            }
             
             _strdrawx += _currentwid * _scale;
             break;
         
         case eSTRTOKEN_TYPE.PLACEHOLDER:
-            var _currentstr = _formatargs[@ _currenttoken[@ eSTRTOKEN.DATA]];
+            var _currentstr = string(_formatargs[@ _currenttoken[@ eSTRTOKEN.DATA]]);
             var _currentwid = string_width(_currentstr);
+            var _currenthei = string_height(_currentstr);
             // ui_draw_text(_strdrawx, _strdrawy, _currentstr, _scale, 0, c_yellow, _alpha);
             // ui_draw_text(_strdrawx, _strdrawy, _currentstr, _scale, 0, c_yellow, _alpha);
-            ui_draw_rect_text(_strdrawx, _strdrawy, _currentwid * _scale, _em, c_orange, _alpha, _currentstr, _scale, _scale, _scale, 0, 0, c_black, _alpha);
+            ui_draw_rect_text(_strdrawx, _strdrawy, _currentwid * _scale, _currenthei * _scale, c_orange, _alpha, _currentstr, _scale, _scale, _scale, 0, 0, c_black, _alpha);
             
             _strdrawx += _currentwid * _scale;
             break;
@@ -72,7 +89,7 @@ var _tokens = global.strfmtCachedStrTokens[? _format];
 if (_tokens == undefined || !ds_exists(_tokens, ds_type_list))
 {
     // There's no cached tokens; process a new one
-    debug_log("=] FMTSTR : PROCESSTOKEN > NO CACHED DATA FOR FORMAT [", _format, "] FOUND, PROCESSING ONE...");
+    // debug_log("=] FMTSTR : PROCESSTOKEN > NO CACHED DATA FOR FORMAT [", _format, "] FOUND, PROCESSING ONE...");
     _tokens = ds_list_create();
     
     var _currentbuffer = ""; // buffer string that contains current 'chunk' of strings
@@ -124,13 +141,13 @@ if (_tokens == undefined || !ds_exists(_tokens, ds_type_list))
                     _codeargs   = string_trim_whitespace(string_delete(_code, 1, _codecommapos));
                 }
                 
-                debug_log(" > DETECTED TOKEN : [CMD : `", _codecmd, "`, ARGS : `", _codeargs, "`] (FULL CODE : `", _code, "`)");
+                // debug_log(" > DETECTED TOKEN : [CMD : `", _codecmd, "`, ARGS : `", _codeargs, "`] (FULL CODE : `", _code, "`)");
                 
                 switch (_codecmd)
                 {
                     case "key":
                         // treat them as an input button token
-                        debug_log(" > TOKEN TYPE : KEY");
+                        // debug_log(" > TOKEN TYPE : KEY");
                         
                         _tokentype = eSTRTOKEN_TYPE.INPUT;
                         _tokendata = _codeargs;
@@ -140,7 +157,7 @@ if (_tokens == undefined || !ds_exists(_tokens, ds_type_list))
                     case "br":
                     case "n":
                         // treat them as an newline token
-                        debug_log(" > TOKEN TYPE : NEWLINE");
+                        // debug_log(" > TOKEN TYPE : NEWLINE");
                         
                         _tokentype = eSTRTOKEN_TYPE.NEWLINE;
                         _tokencodesuccessful = true;
@@ -183,8 +200,8 @@ if (_tokens == undefined || !ds_exists(_tokens, ds_type_list))
     if (_format != "" || _currentbuffer != "")
         ds_list_add(_tokens, ui_draw_text_format_new_token(eSTRTOKEN_TYPE.STRING, _currentbuffer + _format));
 
-    debug_log("=] FMTSTR : PROCESSTOKEN > PROCESSING FORMAT [", _originalformat, "] DONE, DUMPING...");
-    ui_draw_text_format_dump_tokens(_tokens);
+    // debug_log("=] FMTSTR : PROCESSTOKEN > PROCESSING FORMAT [", _originalformat, "] DONE, DUMPING...");
+    // ui_draw_text_format_dump_tokens(_tokens);
 
     // Cache the resulting token list
     global.strfmtCachedStrTokens[? _originalformat] = _tokens;
@@ -311,8 +328,19 @@ for (var i=0; i<ds_list_size(_tokens); i++)
             break;
         
         case eSTRTOKEN_TYPE.INPUT:
-            var _argkey = "[" + _currenttoken[@ eSTRTOKEN.DATA] + "]";
-            _width += string_width(_argkey);
+            var _inputspr   = ui_get_input_icon(_currenttoken[@ eSTRTOKEN.DATA]);
+            var _currentwid = 0;
+            if (is_array(_inputspr))
+            {
+                var _spr = _inputspr[@ 0];
+                _currentwid = sprite_get_width(_spr) + 1;
+            }
+            else
+            {
+                var _currentinput = "[" + _currenttoken[@ eSTRTOKEN.DATA] + "]";
+                _currentwid   = string_width(_currentinput);
+            }
+            _width += _currentwid;
             break;
         
         case eSTRTOKEN_TYPE.NEWLINE:
@@ -412,8 +440,19 @@ for (var i=_tokenoffset; i<ds_list_size(_tokens); i++)
             break;
         
         case eSTRTOKEN_TYPE.INPUT:
-            var _argkey = "[" + _currenttoken[@ eSTRTOKEN.DATA] + "]";
-            _width += string_width(_argkey);
+            var _inputspr   = ui_get_input_icon(_currenttoken[@ eSTRTOKEN.DATA]);
+            var _currentwid = 0;
+            if (is_array(_inputspr))
+            {
+                var _spr = _inputspr[@ 0];
+                _currentwid = sprite_get_width(_spr) + 1;
+            }
+            else
+            {
+                _currentinput = "[" + _currenttoken[@ eSTRTOKEN.DATA] + "]";
+                _currentwid   = string_width(_currentinput);
+            }
+            _width += _currentwid;
             break;
         
         case eSTRTOKEN_TYPE.NEWLINE:

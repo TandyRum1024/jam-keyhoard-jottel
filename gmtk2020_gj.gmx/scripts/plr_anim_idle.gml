@@ -4,23 +4,45 @@ if (!fsmStateInit)
     // Reset the animation
     event_user(0);
     owner.image_index = 0;
+    owner.image_speed = 0;
 }
 
 // Update player sprite animation
-if (owner.upgradeMove)
+with (owner)
 {
-    // Set sprite
-    if (owner.isCharging)
-        owner.sprite_index = sprPlayerIdleCharge;
+    var _inputv = inputV[@ eINPUT.HLD];
+    if (upgradeMove)
+    {
+        // Set sprite
+        if (isCharging)
+        {
+            sprite_index = sprPlayerIdleCharge;
+            if (_inputv < -0.5)
+                image_index = 1;
+            else
+                image_index = 0;
+        }
+        else
+        {
+            sprite_index = sprPlayerIdle;
+            image_index = 0;
+        }
+    }
     else
-        owner.sprite_index = sprPlayerIdle;
-    owner.image_speed = 0.125;
-}
-else
-{
-    owner.sprite_index  = sprPlayerMoveCrawl;
-    owner.image_index   = 0;
-    owner.image_speed   = 0;
+    {
+        if (isCharging)
+        {
+            if (_inputv < -0.5)
+                sprite_index = sprPlayerMoveCrawlChargeUp;
+            else
+                sprite_index = sprPlayerMoveCrawlCharge;
+        }
+        else
+        {
+            sprite_index = sprPlayerMoveCrawl;
+        }
+        image_index  = 0;
+    }
 }
 
 // Update player facing
@@ -67,7 +89,7 @@ animFXShake = 4;
 if (owner.colB)
 {
     // Play sound
-    sfx_play(sndWallImpact, 0.75, random_range(0.9, 1.1));
+    sfx_play(sndFleshImpact, 0.75, random_range(0.9, 1.1));
     sfx_play(sndHeavyImpact, 0.5, random_range(0.9, 1.1));
     
     // Emit some dust & particles
@@ -87,6 +109,10 @@ if (owner.colB)
                 fx_emit_dust(lerp(bbox_left, bbox_right, random_range(-0.1, 0.1) + 0.5), bbox_bottom - vy, random_range(-1, 1), random_range(-1, -0.1), 0.95, room_speed);
         }
     }
+    
+    // Apply screenshake and gamepad vibration
+    fx_camera_shake(32);
+    fx_gamepad_vibration(1.0);
 }
 
 #define plr_anim_move
@@ -103,18 +129,39 @@ if (!fsmStateInit)
 }
 
 // Update player sprite animation
-if (owner.isSprinting)
+with (owner)
 {
-    // Set sprite
-    owner.sprite_index = sprPlayerMoveSprint;
-}
-else
-{
-    // Set sprite
-    if (owner.isCharging)
-        owner.sprite_index = sprPlayerMoveCharge;
+    var _inputv = inputV[@ eINPUT.HLD];
+    if (isSprinting)
+    {
+        // Set sprite
+        if (isCharging)
+        {
+            if (_inputv < -0.5)
+                sprite_index = sprPlayerMoveSprintChargeUp;
+            else
+                sprite_index = sprPlayerMoveSprintCharge;
+        }
+        else
+        {
+            sprite_index = sprPlayerMoveSprint;
+        }
+    }
     else
-        owner.sprite_index = sprPlayerMove;
+    {
+        // Set sprite
+        if (isCharging)
+        {
+            if (_inputv < -0.5)
+                sprite_index = sprPlayerMoveChargeUp;
+            else
+                sprite_index = sprPlayerMoveCharge;
+        }
+        else
+        {
+            sprite_index = sprPlayerMove;
+        }
+    }
 }
 
 // Animate some bouncy movements
@@ -129,15 +176,24 @@ owner.image_index = (moveCtr * oGamevars.animPlrMoveUnit) * owner.image_number;
 // Play sound on each step
 if (abs(_osc) < 0.5)
 {
-    if (!owner.moveFootstepPlayed)
+    with (owner)
     {
-        owner.moveFootstepPlayed = true;
-        owner.moveFootstepFlip *= -1;
-        sfx_play(choose(sndFootstep1, sndFootstep2), 0.5 + owner.moveFootstepFlip * 0.1, 0.7 + owner.moveFootstepFlip * 0.2 + random_range(-0.1, 0.1));
-        
-        // emit some dust
-        with (owner)
+        if (!moveFootstepPlayed)
         {
+            moveFootstepPlayed = true;
+            moveFootstepFlip *= -1;
+            
+            if (isSprinting)
+            {
+                sfx_play(sndWallImpact, 0.5 + moveFootstepFlip * 0.1, 0.7 + moveFootstepFlip * 0.3 + random_range(-0.1, 0.1));
+                sfx_play(choose(sndFootstep1, sndFootstep2), 0.5 + moveFootstepFlip * 0.1, 0.7 + moveFootstepFlip * 0.2 + random_range(-0.1, 0.1));
+            }
+            else
+            {
+                sfx_play(choose(sndFootstep1, sndFootstep2), 0.5 + moveFootstepFlip * 0.1, 0.7 + moveFootstepFlip * 0.2 + random_range(-0.1, 0.1));
+            }
+            
+            // emit some dust
             fx_emit_pomf(random_range(bbox_left, bbox_right), bbox_bottom);
         }
     }
@@ -190,7 +246,24 @@ var _velfactor  = clamp(abs(owner.vx) / owner.moveVelMaxCrawl, 0, 1);
 var _osc        = sin(moveCtr * oGamevars.animPlrMoveUnit);
 image_angle     = _osc * oGamevars.animPlrMoveWiggleAmp * 0.5 * _velfactor;
 
-owner.image_index = (moveCtr * oGamevars.animPlrMoveUnit) * owner.image_number;
+
+// Animate sprite
+with (owner)
+{
+    var _inputv = inputV[@ eINPUT.HLD];
+    if (isCharging)
+    {
+        if (_inputv < -0.5)
+            sprite_index = sprPlayerMoveCrawlChargeUp;
+        else
+            sprite_index = sprPlayerMoveCrawlCharge;
+    }
+    else
+    {
+        sprite_index = sprPlayerMoveCrawl;
+    }
+    image_index = (other.moveCtr * oGamevars.animPlrMoveUnit) * image_number;
+}
 
 // Play sound on each step
 if (abs(_osc) < 0.1)
@@ -279,8 +352,9 @@ else
         sfx_play(sndWallImpact, 0.75, random_range(0.9, 1.1));
         sfx_play(sndHeavyImpact, 0.5, random_range(0.9, 1.1));
         
-        // Shake camera
+        // Apply screenshake and gamepad vibration
         fx_camera_shake(8);
+        fx_gamepad_vibration(0.75);
         
         // Emit some dust & particles
         with (owner)
@@ -309,11 +383,16 @@ if (!fsmStateInit)
     event_user(0);
     
     // Set sprite
-    owner.sprite_index = sprPlayerOld;
+    owner.sprite_index = sprPlayerJump;
+    owner.image_index = 0;
     owner.image_speed = 0;
     
     // Play sound
     sfx_play(sndFootstepJump, 1.0, random_range(0.9, 1.1));
+    
+    // Apply screenshake and gamepad vibration
+    fx_camera_shake(4);
+    fx_gamepad_vibration(0.25);
     
     // Emit particle
     with (owner)
@@ -335,8 +414,22 @@ var _ownervel = 0;
 // Animate sprite animation
 with (owner)
 {
-    image_index = 2;
-    _ownervel = vx - vy * moveFacing;
+    if (isCharging)
+    {
+        var _inputv = inputV[@ eINPUT.HLD];
+        if (_inputv < -0.5)
+            sprite_index = sprPlayerJumpChargeUp;
+        else if (_inputv > 0.5)
+            sprite_index = sprPlayerJumpChargeDown;
+        else
+            sprite_index = sprPlayerJumpCharge;
+    }
+    else
+    {
+        sprite_index = sprPlayerJump;
+    }
+    
+    _ownervel = vy * moveFacing; // vx - vy * moveFacing;
 }
 
 var _interp = interp_weight(fsmStateCtr, oGamevars.animPlrJumpSqueezeFrames, 1.0, oGamevars.animPlrJumpSqueezeWeight);
@@ -359,7 +452,10 @@ if (owner.contactB) // Landed : Switch to idle / move
     // Play sound
     sfx_play(sndFootstepLand, 0.75, random_range(0.9, 1.1));
     
-    // emit some dust
+    // Shake camera
+    fx_camera_shake_add(1);
+    
+    // Emit some dust
     with (owner)
     {
         var _particle = fx_emit_pomf(random_range(bbox_left, bbox_right), bbox_bottom);
@@ -378,8 +474,7 @@ if (!fsmStateInit)
     // Reset the animation
     event_user(0);
     
-    // Update player sprite
-    owner.sprite_index = sprPlayerOld;
+    // Update player sprite info
     owner.image_speed = 0;
 }
 
@@ -388,12 +483,31 @@ var _ownervel = 0;
 // Animate sprite animation
 with (owner)
 {
-    if (sign(vy) > 0)
-        image_index = 1;
+    if (isCharging)
+    {
+        var _inputv = inputV[@ eINPUT.HLD];
+        if (_inputv < -0.5)
+            sprite_index = sprPlayerJumpChargeUp;
+        else if (_inputv > 0.5)
+            sprite_index = sprPlayerJumpChargeDown;
+        else
+            sprite_index = sprPlayerJumpCharge;
+    }
     else
-        image_index = 2;
+    {
+        sprite_index = sprPlayerJump;
+    }
     
-    _ownervel = vx - vy * moveFacing;
+    if (sign(vy) > 0)
+    {
+        image_index = 1;
+    }
+    else
+    {
+        image_index = 0;
+    }
+    
+    _ownervel = vy * moveFacing; // vx - vy * moveFacing;
 }
 
 // Update player facing
@@ -425,13 +539,16 @@ else if (owner.contactB) // Landed : Switch to idle / move
     sfx_play(sndFootstepLand, 0.75, random_range(0.9, 1.1));
     sfx_play(sndHeavyImpact, 0.5, random_range(0.9, 1.1));
     
-    // emit some dust
+    // Emit some dust
     with (owner)
     {
         var _particle = fx_emit_pomf(random_range(bbox_left, bbox_right), bbox_bottom);
         _particle.vx = sign(_particle.x - x);
         _particle.vy = random_range(-0.5, 2);
     }
+    
+    // Apply gamepad vibration
+    fx_gamepad_vibration(1.0);
 }
 
 #define plr_anim_interact
@@ -566,6 +683,10 @@ if (!fsmStateInit)
     sfx_play(sndKickHit, 1.0, random_range(0.9, 1.1));
     sfx_play(sndWallImpact, 1.0, random_range(0.9, 1.1));
     
+    // Apply screenshake and gamepad vibration
+    fx_camera_shake(8);
+    fx_gamepad_vibration(0.25);
+    
     // Emit particle
     with (owner)
     {
@@ -619,7 +740,13 @@ if (!fsmStateInit)
         sfx_play(sndHurt, 0.75, random_range(0.9, 1.1));
         sfx_play(sndFleshImpact, 1.0, random_range(0.9, 1.1));
     }
+    
+    // Apply screenshake and gamepad vibration
+    fx_camera_shake(16);
+    fx_gamepad_vibration(1.0);
 }
+
+var _interp = 1.0 - interp_weight(fsmStateCtr, owner.hurtStunFrames, oGamevars.animPlrHurtWeight, 1.0);
 
 /// Update sprite
 if (fsmStateCtr < owner.hurtStunFrames) // show knockback sprite for first few frames
@@ -627,35 +754,25 @@ if (fsmStateCtr < owner.hurtStunFrames) // show knockback sprite for first few f
     // Set sprite & frame
     owner.sprite_index = sprPlayerHurt;
     owner.image_index = 0;
+    
+    // Update sprite angle
+    if (owner.contactB)
+        image_angle = oGamevars.animPlrHurtTiltAmpGround * owner.moveFacing * _interp;
+    else
+        image_angle = oGamevars.animPlrHurtTiltAmpMidair * owner.moveFacing * _interp;
 }
 else // show state-dependant hurt sprite afterwards
 {
-    if (owner.contactB)
-    {
-        // Set sprite & frame
-        owner.sprite_index = sprPlayerHurt;
-        owner.image_index = 0;
-        
-        // Fix sprite angle to 0
-        image_angle = 0;
-    }
-    else
-    {
-        // Set sprite & frame
-        owner.sprite_index = sprPlayerHurt;
-        owner.image_index = 1;
-        
-        // Update sprite angle to follow the movement
-        image_angle -= angle_difference(image_angle, point_direction(0, 0, owner.vx, owner.vy)) * 0.5;
-    }
+    // Set sprite & frame
+    owner.sprite_index = sprPlayerHurt;
+    owner.image_index = 0;
 }
 
 // Apply shake
-var _interp = 1.0 - interp_weight(fsmStateCtr, owner.hurtStunFrames, oGamevars.animPlrHurtWeight, 1.0);
 animFXShake = oGamevars.animPlrHurtShakeAmp * _interp;
 
 /// Check for state switches
-if (fsmStateCtr != owner.hurtFrames) // Knockback ended
+if (fsmStateCtr > owner.hurtFrames) // Knockback ended
 {
     if (!owner.contactB) // Fall
     {

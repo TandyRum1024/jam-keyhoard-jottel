@@ -75,20 +75,35 @@ if (!singleton_update())
             <string>/// FSM
 fsm_init();
 fsm_add_state("nothing", ui_nothing);
+fsm_add_state("loading", ui_loading);
 fsm_add_state("screen_nofilter_warning", ui_screen_nofilter_warning);
+fsm_add_state("screen_seizure_warning", ui_screen_seizure_warning);
 fsm_add_state("title", ui_title);
 fsm_add_state("intro", ui_intro);
 fsm_add_state("ending", ui_ending);
+fsm_add_state("credits", ui_credits);
 fsm_add_state("ingame", ui_ingame);
+fsm_add_state("ingame_intro", ui_ingame_intro);
+fsm_add_state("ingame_ending", ui_ingame_ending);
 fsm_add_state("item_get", ui_item_get);
 fsm_add_state("item_assign", ui_item_assign);
 fsm_add_state("teleport_select", ui_teleport_select);
+
+fsm_add_state("objective_main", ui_objective_menu);
+fsm_add_state("objective_item_relocate_select_inv", ui_item_relocate_select_inv);
+fsm_add_state("objective_item_relocate_select_room", ui_item_relocate_select_room);
 fsm_add_state("powercell_deposit", ui_powercell_deposit);
 
 fsm_add_state("paused_main", ui_paused);
 fsm_add_state("paused_settings", ui_paused_settings);
+fsm_add_state("paused_settings_deadzone", ui_paused_settings_deadzone);
 fsm_add_state("paused_respawn", ui_paused_respawn);
 fsm_add_state("paused_exit", ui_paused_exit);
+
+fsm_add_state("debug_main", ui_debug);
+fsm_add_state("debug_roomdata", ui_debug_roomdata);
+fsm_add_state("debug_keylayout", ui_debug_keylayout);
+
 fsm_set("nothing");
 
 </string>
@@ -123,10 +138,62 @@ titleLogoScale = 6;
 itemGetType     = eITEM.NONE;
 itemGetReady    = false;
 
-/// Item assign
-itemAssignDisplayKeysize    = 64;
-itemAssignDisplayKeymargin  = 8;
-itemAssignDisplayMaxWid     = 4; // Display 4 keys per row
+/// Item relocate
+itemRelocateRoomIconRealsize   = 32; // real size of each tile in the room
+itemRelocateRoomIconTargetscale= 1;
+itemRelocateRoomIconTargetsize = itemRelocateRoomIconTargetscale * sprite_get_width(sprUIMapIcons); // intended size of each tile in display
+itemRelocateRoomIconscale      = itemRelocateRoomIconTargetsize / itemRelocateRoomIconRealsize; // scale of everything else in display in relation of tile size
+
+/// Keyslots display
+// (current 'layout' that describes how the keyslots should be drawn)
+enum eKEYLAYOUT
+{
+    CONFIG = 0,
+    INPUTS
+}
+enum eKEYLAYOUT_CONFIG
+{
+    LAYOUT_ID = 0,
+    NAME,
+    SPRITESET,
+    GRIDW,
+    GRIDH
+}
+enum eKEYLAYOUT_KEY
+{
+    DISPLAY_STR = 0,
+    GRIDX,
+    GRIDY,
+    OFFX,
+    OFFY,
+    SPRIDX,
+    INPUT_ID
+}
+UIInputLayoutJson      = undefined;
+UIInputLayouts         = undefined;
+UIInputLayoutCurrent     = undefined;
+UIInputLayoutCurrentData = undefined;
+UIInputLayoutItemSize  = 32;
+UIInputLayoutItemScale = 2;
+UIInputLayoutTextScale = 2;
+UIInputLayoutItemMarginH = 0;
+UIInputLayoutItemMarginV = 16 * UIInputLayoutTextScale;
+UIInputLayoutCurrentSpriteset = "keyboard";
+ui_load_keyslot_display_layout(); // json_encode();
+
+// (sprite sets for keyslots : each element contains array of sprites)
+UIInputSprSets = ds_map_create();
+UIInputSprSets[? "keyboard"]    = makearray(sprUIKeyslotKey, sprUIKeyslotKeyLong);
+UIInputSprSets[? "gamepad_xbox"]= makearray(sprUIKeyslotButton, sprUIKeyslotButtonLong);
+UIInputSprSets[? "gamepad_ps"]  = makearray(sprUIKeyslotButton, sprUIKeyslotButtonLong);
+
+/// Objective menu
+objectiveMenuList = makearray(
+    makearray("default", "RESUME", "RESUME THE OPERATION"),
+    makearray("objective_powercell_deposit", "DEPOSIT", "DEPOSIT THE POWER CANISTER TO PROGRESS THE REPAIRMENT"),
+    makearray("objective_item_relocate_select_item", "RELOCATOR", "SWITCH AN ITEM FROM YOUR INVENTORY IN EXCHANGE FOR AN ITEM IN THE OTHER ROOMS THAT HAS BEEN ALREADY INSPECTED"),
+);
+objectiveMenuSelected = 0;
 
 /// Paused menu
 pausedMenuList = makearray(
@@ -143,18 +210,86 @@ enum eSETTINGS
     SFX_VOL = 0,
     MUS_VOL,
     UI_FLICKER,
-    POSTPROCESSING
+    POSTPROCESSING,
+    GOTO_CONTROLLER_DEADZONE
 }
 var _percentval = makearray(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0);
 var _percentstr = makearray("0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%");
 pausedSettingsList = makearray(
-    makearray("SFX. VOL", 5, _percentval, _percentstr),
-    makearray("MUS. VOL", 5, _percentval, _percentstr),
-    makearray("ADJUST UI FLICKER", 5, _percentval, _percentstr),
-    makearray("SHADER/FILTER FX", 0, makearray(true, false), makearray("Y", "N"))
+    makearray("SFX. VOL", 5, _percentval, _percentstr, ""),
+    makearray("MUS. VOL", 5, _percentval, _percentstr, ""),
+    makearray("UI FLICKER", 5, _percentval, _percentstr, ""),
+    makearray("SHADER/FILTER FX", 0, makearray(true, false), makearray("Y", "N"), ""),
+    makearray("SET UP JOYSTICK...", 0, makearray(false, true), makearray("...", "OK"), "paused_settings_deadzone")
 );
 pausedSettingsSelected = 0;
 pausedSettingsAdjusting = false;
+
+/// Debug menu
+debugMenuList = makearray(
+    makearray("default", "RESUME", "RESUME"),
+    makearray("debug_roomdata", "ROOMDATA", "DISPLAYS ROOM DATA"),
+    makearray("debug_keylayout", "KEYLAYOUTTOOL", "MAKE NEW KEYLAYOUT"),
+    makearray("debug_impulse101", "IMPULSE101", "TOGGLE UNLOCK ALL POWERUP MODE"),
+    makearray("debug_impulse102", "INCR.POWERCELL", "REPAIRS SHIP / INCREMENT OBJECTIVE PROGRESSION BY 1"),
+    makearray("debug_impulse103", "KILLPLR", "SETS HP TO 0"),
+    makearray("debug_impulse104", "UNLOCKALLKEYS", "UNLOCKS ALL KEYSLOT EXPANSION UPGRADES"),
+    makearray("ingame_ending", "GOTOEND", "SWITCH TO ENDING CUTSCENE"),
+);
+debugMenuSelected = 0;
+
+/// Debug menu : display room data
+debugRoomdataCurrentRoom        = 0;
+debugRoomdataCurrentRoomData    = undefined;
+debugRoomdataCurrentRoomEvents  = undefined;
+debugRoomdataCurrentRoomEventsStr = "NONE"; // cached string representation of room events
+debugRoomdataTilesize       = 8; // size of each tile in display
+debugRoomdataTilesizeMin    = 4;
+debugRoomdataTilesizeMax    = 32;
+debugRoomdataScale          = debugRoomdataTilesize / 32; // scale of everything else in display in relation of tile size
+
+
+/// Sprite table for input icons
+UIInputIconSprTable = ds_map_create();
+
+// KEYBOARD
+var _table = ds_map_create();
+_table[? "arrows"]  = makearray(sprUIInputIconsKeyboardLong, 0);
+_table[? "left"]    = makearray(sprUIInputIconsKeyboard, 0);
+_table[? "up"]      = makearray(sprUIInputIconsKeyboard, 1);
+_table[? "right"]   = makearray(sprUIInputIconsKeyboard, 2);
+_table[? "down"]    = makearray(sprUIInputIconsKeyboard, 3);
+_table[? "confirm"] = makearray(sprUIInputIconsKeyboardLong, 1);
+_table[? "deny"]    = makearray(sprUIInputIconsKeyboardLong, 2);
+_table[? "confirm_alt"] = makearray(sprUIInputIconsNone, 0);
+_table[? "deny_alt"]    = makearray(sprUIInputIconsNone, 0);
+ds_map_add_map(UIInputIconSprTable, "keyboard", _table);
+
+// XBOX
+var _table = ds_map_create();
+_table[? "arrows"]  = makearray(sprUIInputIconsGamepad, 0);
+_table[? "left"]    = makearray(sprUIInputIconsKeyboard, 0);
+_table[? "up"]      = makearray(sprUIInputIconsKeyboard, 1);
+_table[? "right"]   = makearray(sprUIInputIconsKeyboard, 2);
+_table[? "down"]    = makearray(sprUIInputIconsKeyboard, 3);
+_table[? "confirm"] = makearray(sprUIInputIconsGamepadLong, 1);
+_table[? "deny"]    = makearray(sprUIInputIconsGamepadLong, 0);
+_table[? "confirm_alt"] = makearray(sprUIInputIconsGamepad, 1);
+_table[? "deny_alt"]    = makearray(sprUIInputIconsGamepad, 2);
+ds_map_add_map(UIInputIconSprTable, "gamepad_xbox", _table);
+
+// PS
+var _table = ds_map_create();
+_table[? "arrows"]  = makearray(sprUIInputIconsGamepad, 0);
+_table[? "left"]    = makearray(sprUIInputIconsKeyboard, 0);
+_table[? "up"]      = makearray(sprUIInputIconsKeyboard, 1);
+_table[? "right"]   = makearray(sprUIInputIconsKeyboard, 2);
+_table[? "down"]    = makearray(sprUIInputIconsKeyboard, 3);
+_table[? "confirm"] = makearray(sprUIInputIconsGamepadLong, 2);
+_table[? "deny"]    = makearray(sprUIInputIconsGamepadLong, 0);
+_table[? "confirm_alt"] = makearray(sprUIInputIconsGamepad, 5);
+_table[? "deny_alt"]    = makearray(sprUIInputIconsGamepad, 6);
+ds_map_add_map(UIInputIconSprTable, "gamepad_ps", _table);
 
 </string>
           </argument>
@@ -185,6 +320,21 @@ UIMessage2Scale = 2;
 
 UIMessageShowFrames     = 0;
 UIMessageShowFramesMax  = room_speed * 2.0;
+
+// Ingame intro cutscene message
+UIIntroCutsceneMsgShowFrames = room_speed;
+UIIntroCutsceneMsgHideFrames = 15;
+
+// Ingame outtro / ending cutscene message
+UIEndingCutsceneMsgShowFrames = room_speed * 2.0;
+UIEndingCutsceneMsgHideFrames = 15;
+
+// Subtitles
+UISubtitle = "";
+UISubtitleShowFrames        = 0;
+UISubtitleShowFramesDefault = room_speed * 3.0;
+UISubtitleShowFramesFade    = 15;
+UISubtitleShowAnimFrames    = 0;
 
 // Input popup
 UIInputModePopup            = false;
@@ -219,6 +369,13 @@ if (objectInitialized)
 {
     /// FSM
     fsm_destroy();
+    
+    /// Keyslots layout
+    ds_map_destroy(UIInputLayouts);
+    ds_map_destroy(UIInputLayoutJson);
+    ds_map_destroy(UIInputSprSets);
+    ds_map_destroy(UIInputMenuSprSets);
+    ds_map_destroy(UIInputIconSprTable);
 }
 </string>
           </argument>
@@ -273,9 +430,17 @@ global.winCenterY = global.winHei * 0.5;
 // Check for paused
 if (!global.isPhysicsPaused)
 {
+    // Message
     if (UIMessageShowFrames &gt; 0)
     {
         UIMessageShowFrames--;
+    }
+    
+    // Subtitle
+    if (UISubtitleShowFrames &gt; 0)
+    {
+        UISubtitleShowFrames--;
+        UISubtitleShowAnimFrames++;
     }
 }
 
@@ -378,7 +543,7 @@ itemAssignDisplayKeysize = 64 * global.gameUIZoom;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>/// Display input popup
+            <string>/// Display input popup &amp; detect layout
 if (!UIInputModePopup)
 {
     UIInputModePopup        = true;
@@ -391,6 +556,8 @@ else
     UIInputModePopupFrames  = 0;
 }
 
+/// Detect keyslot/inventory layout
+ui_keyslot_display_layout_detect();
 </string>
           </argument>
         </arguments>
@@ -420,8 +587,8 @@ if (UIInputModePopup)
     var _popupaniminterp     = interp_weight(UIInputModePopupFrames, UIInputModePopupFramesMax, 3.0, 3.0);
     var _popupaniminterpfast = interp_weight(UIInputModePopupFrames, 4, 3.0, 3.0);
     
-    var _popupscale      = 3 * global.gameUIZoom;
-    var _popuptextscale  = 2 * global.gameUIZoom;
+    var _popupscale      = 2 * global.gameUIZoom;
+    var _popuptextscale  = 3 * global.gameUIZoom;
     var _popupcolour     = c_white;
     var _popupalpha      = _popupaniminterpfast;
     
@@ -431,7 +598,8 @@ if (UIInputModePopup)
     var _popupy = lerp(-_popupheight, 16, _popupaniminterp);
     
     var _popupiconmargin = 16;
-    var _popupiconsize   = floor(_popupheight - _popupiconmargin * 2);
+    var _popupiconscale  = 2 * global.gameUIZoom;
+    var _popupiconsize   = sprite_get_width(sprUIInputMethodIcons) * _popupiconscale;
     var _popupiconx = _popupx + _popupiconmargin;
     var _popupicony = _popupy + _popupiconmargin;
     
@@ -448,8 +616,11 @@ if (UIInputModePopup)
     // Draw icon
     var _inputcurrentmethod     = oInput.inputMethodCurrent;
     var _inputcurrentmethodstr  = oInput.inputMethodNameStr[@ _inputcurrentmethod] + "#" + string(_popupiconsize) + "x" + string(_popupiconsize);
-    ui_draw_rect(_popupiconx, _popupicony, _popupiconsize, _popupiconsize, _popupcolour, _popupalpha);
-    ui_draw_rect_text(_popupiconx + 1, _popupicony + 1, _popupiconsize - 2, _popupiconsize - 2, c_black, _popupalpha, _inputcurrentmethodstr, 1, 0, 0, 1, 1, _popupcolour, _popupalpha);
+    _popupiconx += _popupiconsize * 0.5;
+    _popupicony += _popupiconsize * 0.5;
+    draw_sprite_ext(sprUIInputMethodIcons, _inputcurrentmethod, _popupiconx, _popupicony, _popupiconscale, _popupiconscale, 0, c_white, _popupalpha);
+    // ui_draw_rect(_popupiconx, _popupicony, _popupiconsize, _popupiconsize, _popupcolour, _popupalpha);
+    // ui_draw_rect_text(_popupiconx + 1, _popupicony + 1, _popupiconsize - 2, _popupiconsize - 2, c_black, _popupalpha, _inputcurrentmethodstr, 1, 0, 0, 1, 1, _popupcolour, _popupalpha);
     
     // Draw message
     var _popupdevicestr1 = oInput.inputMethodNameStr[@ _inputcurrentmethod];
@@ -462,7 +633,7 @@ if (UIInputModePopup)
     
     draw_set_halign(0); draw_set_valign(0);
     ui_draw_text(_popupmsgstrx, _popupmsgstry1, _popupmsgstr1, _popupscale, 0, c_orange, _popupalpha);
-    ui_draw_text_format(_popupmsgstrx, _popupmsgstry2, _popupmsgstr2, _popuptextscale, _popupcolour, _popupalpha, 0, 0, makearray(_popupdevicestr1, _popupdevicestr2));
+    ui_draw_text_format(_popupmsgstrx, _popupmsgstry2, _popupmsgstr2, _popuptextscale * 0.5, _popupcolour, _popupalpha, 0, 0, makearray(_popupdevicestr1, _popupdevicestr2));
 }
 </string>
           </argument>

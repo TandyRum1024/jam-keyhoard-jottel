@@ -32,6 +32,10 @@ roomReady = false;
 /// Room's name &amp; description
 title       = "ROOM F-XV-3E";
 subtitle    = "pain hamburger";
+
+/// Room entity index
+entityPickupIndex = 0;
+entityTeleportIndex = 0;
 </string>
           </argument>
         </arguments>
@@ -74,12 +78,14 @@ for (var i=0; i&lt;array_length_1d(_tiles); i++)
 }
 
 /// Handle room events
+// debug_log("ROOM ROOM_START &gt; READING EVENTS FOR ", room_get_name(room));
 var _events = roomevents_get();
 if (_events != undefined)
 {
     for (var i=0; i&lt;ds_list_size(_events); i++)
     {
         var _ev = _events[| i];
+        // debug_log("ROOM ROOM_START &gt; EVENT : ", _ev);
         switch (_ev[@ 0])
         {
             case eEVENT.DELETE_OBJ:
@@ -107,18 +113,18 @@ if (_events != undefined)
             case eEVENT.SWAP_PICKUP_ITEM:
                 // Swap [itemtype, x, y]
                 var _type = _ev[@ 1], _x = _ev[@ 2], _y = _ev[@ 3];
-                debug_log("oROOM - PICKUP SWAP ROOM EVENT [", _x, ", ", _y, "]");
+                // debug_log("oROOM - PICKUP SWAP ROOM EVENT [", _x, ", ", _y, "]");
                 
                 var _inst = instance_position(_x, _y, oPickup);
                 if (instance_exists(_inst))
                 {
-                    debug_log(" &gt; OG PICKUP ITEM : ", _inst.type, " | SWAPPED ITEM : ", _type);
+                    // debug_log(" &gt; OG PICKUP ITEM : ", _inst.type, " | SWAPPED ITEM : ", _type);
                     _inst.type = _type;
                 }
-                else
-                {
-                    debug_log(" &gt; NO SWAPPABLE ITEM FOUND :( [", _inst, "]");
-                }
+                // else
+                // {
+                //     debug_log(" &gt; NO SWAPPABLE ITEM FOUND :( [", _inst, "]");
+                // }
                 break;
                 
             case eEVENT.UNLOCK_TP:
@@ -127,6 +133,23 @@ if (_events != undefined)
                 {
                     active = true;
                 }
+                break;
+                
+            case eEVENT.UNLOCK_ITEM:
+                // Unlock item [x, y]
+                var _x = _ev[@ 1], _y = _ev[@ 2];
+                
+                // Unlock item to make it available to relocate
+                var _inst = instance_position(_x, _y, oPickup);
+                if (instance_exists(_inst))
+                {
+                    // debug_log(" &gt; UNLOCKING ITEM : ", _inst.type);
+                    _inst.unlocked = true;
+                }
+                // else
+                // {
+                //     debug_log(" &gt; NO UNLOCKABLE ITEM FOUND :( [", _inst, "]");
+                // }
                 break;
         }
     }

@@ -5,7 +5,7 @@ if (!fsmStateInit)
     event_user(0);
     
     owner.sprite_index = sprEnemy;
-    owner.image_index  = 1;
+    owner.image_index  = 0;
 }
 
 // Animate wiggly animation

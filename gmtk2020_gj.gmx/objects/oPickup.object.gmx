@@ -30,6 +30,9 @@ type = eITEM.MISC;
 
 mask_index = bboxTile;
 image_speed = 0;
+
+roomIndex = id;// oRoom.entityPickupIndex++;
+unlocked = false;
 </string>
           </argument>
         </arguments>
@@ -54,7 +57,8 @@ image_speed = 0;
             <kind>1</kind>
             <string>/// Draw respective sprite
 draw_sprite_ext(sprPickup, type, x, y, image_xscale, image_yscale, image_angle, image_blend, image_alpha);
-
+draw_set_halign(0); draw_set_valign(2);
+// ui_draw_text(x, y, "\#" + string(roomIndex), 1.0, 0, c_orange, 1.0);
 </string>
           </argument>
         </arguments>

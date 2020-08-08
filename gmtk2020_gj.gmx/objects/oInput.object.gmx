@@ -77,7 +77,8 @@ enum eINPUT
 {
     HLD = 0,
     PRS,
-    REL
+    REL,
+    BIND
 }
 
 // keyboard
@@ -91,8 +92,8 @@ inputBindKeyboardDeny    = vk_escape;
 // (keyslot)
 inputBindKeyboardKey1 = ord('Z');
 inputBindKeyboardKey2 = ord('X');
-inputBindKeyboardKey3 = ord('C');
-inputBindKeyboardKey4 = ord('V');
+inputBindKeyboardKey3 = ord('A');
+inputBindKeyboardKey4 = ord('S');
 inputBindKeyboardKey5 = vk_shift;
 
 // gamepad
@@ -100,10 +101,10 @@ inputBindGamepadL = gp_padl;
 inputBindGamepadR = gp_padr;
 inputBindGamepadU = gp_padu;
 inputBindGamepadD = gp_padd;
-inputBindGamepadConfirm     = gp_face1; // A / CROSS button
-inputBindGamepadDeny        = gp_face2; // B / CIRCLE button
-inputBindGamepadConfirmAlt  = gp_select;
-inputBindGamepadDenyAlt     = gp_start;
+inputBindGamepadConfirm     = gp_select;
+inputBindGamepadDeny        = gp_start;
+inputBindGamepadConfirmAlt  = gp_face1; // A / CROSS button (for menu)
+inputBindGamepadDenyAlt     = gp_face2; // B / CIRCLE button (for menu)
 // (keyslot)
 inputBindGamepadKey1 = gp_face1;
 inputBindGamepadKey2 = gp_face2;
@@ -111,10 +112,16 @@ inputBindGamepadKey3 = gp_face3;
 inputBindGamepadKey4 = gp_face4;
 inputBindGamepadKey5 = makearray(gp_shoulderl, gp_shoulderlb, gp_shoulderr, gp_shoulderrb);
 
+/// Key states : they're made of arrays so that we can refer it from other instances
+// (like a pointer but.. hacky &amp; works in GMS1 I guess)
 inputH = makearray(false, false, false);
 inputV = makearray(false, false, false);
+inputHPrev = 0;
+inputVPrev = 0;
 inputConfirm    = makearray(false, false, false); // yes
 inputDeny       = makearray(false, false, false); // no
+inputConfirmAlt = makearray(false, false, false); // yes
+inputDenyAlt    = makearray(false, false, false); // no
 // (keyslot)
 inputKey1       = makearray(false, false, false);
 inputKey2       = makearray(false, false, false);
@@ -139,6 +146,11 @@ inputMethodCurrent = eINPUT_METHOD.KEYBOARD;
 
 // Current input device
 inputDevice = 0;
+
+// Current gamepad vibration amount
+inputVibration = 0;
+inputVibrationDamp = 0.95;
+inputVibrationAmplitude = 0.75;
 
 /// Gamepad specific vars
 inputGamepadList = ds_list_create();
@@ -167,27 +179,33 @@ inputGamepadList = ds_list_create();
 /// Enum : inventory key slot data
 enum eINVKEY
 {
-    KEY = 0, // key state
-    AVAILABLE,
-    ID,
-    ITEM
+    KEYSTATE = 0,   // key state : points to array w/ size of 3 that holds input's hold, press, release state
+    AVAILABLE,      // is the slot available?
+    ITEM            // item index
 }
 
-invSlots = ds_list_create();
-inv_key_add(ord("A"), true, "BTN1");
-inv_key_add(ord("S"), true, "BTN2");
-inv_key_add(ord("Z"), false, "BTN3");
-inv_key_add(ord("X"), false, "BTN4");
-inv_key_add(vk_shift, false, "BTN5");
+/// List of keyslots id
+invKeyslotsIDList = ds_list_create();
+
+/// Declare keyslots
+invKeyslots = ds_map_create();
+inv_key_add("BTN1", inputKey1);
+inv_key_add("BTN2", inputKey2);
+inv_key_add("BTN3", inputKey3);
+inv_key_add("BTN4", inputKey4);
+inv_key_add("BTN5", inputKey5);
 
 /// Table of keys unlocking on each level
 invKeysUnlock = makearray(
-    makearray("BTN1", "BTN1"),
-    makearray(vk_shift),
-    makearray(ord("A")),
-    makearray(ord("S"))
+    makearray("BTN1", "BTN2"),
+    makearray("BTN5"),
+    makearray("BTN3"),
+    makearray("BTN4")
     );
 invKeysLevel = 0;
+
+// Update key upgrade status
+event_user(1);
 </string>
           </argument>
         </arguments>
@@ -216,15 +234,17 @@ if (objectInitialized)
     ds_list_destroy(inputGamepadList);
     
     /// Key slot system
-    if (ds_exists(invSlots, ds_type_list))
-        ds_list_destroy(invSlots);
+    if (ds_exists(invSlots, ds_type_map))
+        ds_map_destroy(invSlots);
+    if (ds_exists(invKeyslotsIDList, ds_type_list))
+        ds_list_destroy(invKeyslotsIDList);
 }
 </string>
           </argument>
         </arguments>
       </action>
     </event>
-    <event eventtype="3" enumb="0">
+    <event eventtype="3" enumb="1">
       <action>
         <libid>1</libid>
         <id>603</id>
@@ -261,11 +281,17 @@ switch (inputMethodCurrent)
         inputConfirm[@ eINPUT.HLD] = keyboard_check(inputBindKeyboardConfirm);
         inputConfirm[@ eINPUT.PRS] = keyboard_check_pressed(inputBindKeyboardConfirm);
         inputConfirm[@ eINPUT.REL] = keyboard_check_released(inputBindKeyboardConfirm);
+        inputConfirmAlt[@ eINPUT.HLD] = false;
+        inputConfirmAlt[@ eINPUT.PRS] = false;
+        inputConfirmAlt[@ eINPUT.REL] = false;
         
         // (deny)
         inputDeny[@ eINPUT.HLD] = keyboard_check(inputBindKeyboardDeny);
         inputDeny[@ eINPUT.PRS] = keyboard_check_pressed(inputBindKeyboardDeny);
         inputDeny[@ eINPUT.REL] = keyboard_check_released(inputBindKeyboardDeny);
+        inputDenyAlt[@ eINPUT.HLD] = false;
+        inputDenyAlt[@ eINPUT.PRS] = false;
+        inputDenyAlt[@ eINPUT.REL] = false;
         
         // (keyslots)
         inputKey1[@ eINPUT.HLD] = keyboard_check(inputBindKeyboardKey1);
@@ -287,6 +313,9 @@ switch (inputMethodCurrent)
         
     case eINPUT_METHOD.GAMEPAD:
         /// Check for gamepad inputs
+        inputHPrev = inputH[@ eINPUT.HLD];
+        inputVPrev = inputV[@ eINPUT.HLD];
+        
         // (horizontal)
         inputH[@ eINPUT.HLD] = gamepad_button_check(inputDevice, inputBindGamepadR) - gamepad_button_check(inputDevice, inputBindGamepadL);
         inputH[@ eINPUT.PRS] = gamepad_button_check_pressed(inputDevice, inputBindGamepadR) - gamepad_button_check_pressed(inputDevice, inputBindGamepadL);
@@ -302,30 +331,59 @@ switch (inputMethodCurrent)
             inputH[@ eINPUT.HLD] = gamepad_axis_value(inputDevice, gp_axislh);
         if (inputV[@ eINPUT.HLD] == 0)
             inputV[@ eINPUT.HLD] = gamepad_axis_value(inputDevice, gp_axislv);
+            
+        if (inputH[@ eINPUT.PRS] == 0 &amp;&amp; (abs(inputHPrev) &lt;= math_get_epsilon() &amp;&amp; abs(inputH[@ eINPUT.HLD]) &gt; math_get_epsilon()))
+        {
+            // debug_log("oINPUT STEPBEGIN &gt; INPUTHPREV : ", abs(inputHPrev));
+            inputH[@ eINPUT.PRS] = sign(inputH[@ eINPUT.HLD]);
+        }
+        if (inputV[@ eINPUT.PRS] == 0 &amp;&amp; (abs(inputVPrev) &lt;= math_get_epsilon() &amp;&amp; abs(inputV[@ eINPUT.HLD]) &gt; math_get_epsilon()))
+        {
+            // debug_log("oINPUT STEPBEGIN &gt; INPUTVPREV : ", abs(inputVPrev));
+            inputV[@ eINPUT.PRS] = sign(inputV[@ eINPUT.HLD]);
+        }
+            
+        if (inputH[@ eINPUT.REL] == 0 &amp;&amp; (abs(inputHPrev) &gt; math_get_epsilon() &amp;&amp; abs(inputH[@ eINPUT.HLD]) &lt;= math_get_epsilon()))
+            inputH[@ eINPUT.REL] = sign(inputHPrev);
+        if (inputV[@ eINPUT.REL] == 0 &amp;&amp; (abs(inputVPrev) &gt; math_get_epsilon() &amp;&amp; abs(inputV[@ eINPUT.HLD]) &lt;= math_get_epsilon()))
+            inputV[@ eINPUT.REL] = sign(inputVPrev);
         
         // (confirm)
-        inputConfirm[@ eINPUT.HLD] = gamepad_button_check(inputDevice, inputBindGamepadConfirm) || gamepad_button_check(inputDevice, inputBindGamepadConfirmAlt);
-        inputConfirm[@ eINPUT.PRS] = gamepad_button_check_pressed(inputDevice, inputBindGamepadConfirm) || gamepad_button_check_pressed(inputDevice, inputBindGamepadConfirmAlt);
-        inputConfirm[@ eINPUT.REL] = gamepad_button_check_released(inputDevice, inputBindGamepadConfirm) || gamepad_button_check_released(inputDevice, inputBindGamepadConfirmAlt);
+        inputConfirm[@ eINPUT.HLD] = gamepad_button_check(inputDevice, inputBindGamepadConfirm);
+        inputConfirm[@ eINPUT.PRS] = gamepad_button_check_pressed(inputDevice, inputBindGamepadConfirm);
+        inputConfirm[@ eINPUT.REL] = gamepad_button_check_released(inputDevice, inputBindGamepadConfirm);
+        inputConfirmAlt[@ eINPUT.HLD] = gamepad_button_check(inputDevice, inputBindGamepadConfirmAlt);
+        inputConfirmAlt[@ eINPUT.PRS] = gamepad_button_check_pressed(inputDevice, inputBindGamepadConfirmAlt);
+        inputConfirmAlt[@ eINPUT.REL] = gamepad_button_check_released(inputDevice, inputBindGamepadConfirmAlt);
         
         // (deny)
-        inputDeny[@ eINPUT.HLD] = gamepad_button_check(inputDevice, inputBindGamepadDeny) || gamepad_button_check(inputDevice, inputBindGamepadDenyAlt);
-        inputDeny[@ eINPUT.PRS] = gamepad_button_check_pressed(inputDevice, inputBindGamepadDeny) || gamepad_button_check_pressed(inputDevice, inputBindGamepadDenyAlt);
-        inputDeny[@ eINPUT.REL] = gamepad_button_check_released(inputDevice, inputBindGamepadDeny) || gamepad_button_check_released(inputDevice, inputBindGamepadDenyAlt);
+        inputDeny[@ eINPUT.HLD] = gamepad_button_check(inputDevice, inputBindGamepadDeny);
+        inputDeny[@ eINPUT.PRS] = gamepad_button_check_pressed(inputDevice, inputBindGamepadDeny);
+        inputDeny[@ eINPUT.REL] = gamepad_button_check_released(inputDevice, inputBindGamepadDeny);
+        inputDenyAlt[@ eINPUT.HLD] = gamepad_button_check(inputDevice, inputBindGamepadDenyAlt);
+        inputDenyAlt[@ eINPUT.PRS] = gamepad_button_check_pressed(inputDevice, inputBindGamepadDenyAlt);
+        inputDenyAlt[@ eINPUT.REL] = gamepad_button_check_released(inputDevice, inputBindGamepadDenyAlt);
         
         // (keyslots)
         inputKey1[@ eINPUT.HLD] = gamepad_button_check(inputDevice, inputBindGamepadKey1);
         inputKey1[@ eINPUT.PRS] = gamepad_button_check_pressed(inputDevice, inputBindGamepadKey1);
         inputKey1[@ eINPUT.REL] = gamepad_button_check_released(inputDevice, inputBindGamepadKey1);
-        inputKey2[@ eINPUT.HLD] = gamepad_button_check(inputDevice, inputBindKeyboardKey2);
-        inputKey2[@ eINPUT.PRS] = gamepad_button_check_pressed(inputDevice, inputBindKeyboardKey2);
-        inputKey2[@ eINPUT.REL] = gamepad_button_check_released(inputDevice, inputBindKeyboardKey2);
-        inputKey3[@ eINPUT.HLD] = gamepad_button_check(inputDevice, inputBindKeyboardKey3);
-        inputKey3[@ eINPUT.PRS] = gamepad_button_check_pressed(inputDevice, inputBindKeyboardKey3);
-        inputKey3[@ eINPUT.REL] = gamepad_button_check_released(inputDevice, inputBindKeyboardKey3);
-        inputKey4[@ eINPUT.HLD] = gamepad_button_check(inputDevice, inputBindKeyboardKey4);
-        inputKey4[@ eINPUT.PRS] = gamepad_button_check_pressed(inputDevice, inputBindKeyboardKey4);
-        inputKey4[@ eINPUT.REL] = gamepad_button_check_released(inputDevice, inputBindKeyboardKey4);
+        
+        inputKey2[@ eINPUT.HLD] = gamepad_button_check(inputDevice, inputBindGamepadKey2);
+        inputKey2[@ eINPUT.PRS] = gamepad_button_check_pressed(inputDevice, inputBindGamepadKey2);
+        inputKey2[@ eINPUT.REL] = gamepad_button_check_released(inputDevice, inputBindGamepadKey2);
+        
+        inputKey3[@ eINPUT.HLD] = gamepad_button_check(inputDevice, inputBindGamepadKey3);
+        inputKey3[@ eINPUT.PRS] = gamepad_button_check_pressed(inputDevice, inputBindGamepadKey3);
+        inputKey3[@ eINPUT.REL] = gamepad_button_check_released(inputDevice, inputBindGamepadKey3);
+        
+        inputKey4[@ eINPUT.HLD] = gamepad_button_check(inputDevice, inputBindGamepadKey4);
+        inputKey4[@ eINPUT.PRS] = gamepad_button_check_pressed(inputDevice, inputBindGamepadKey4);
+        inputKey4[@ eINPUT.REL] = gamepad_button_check_released(inputDevice, inputBindGamepadKey4);
+        
+        inputKey5[@ eINPUT.HLD] = false;
+        inputKey5[@ eINPUT.PRS] = false;
+        inputKey5[@ eINPUT.REL] = false;
         for (var i=0; i&lt;array_length_1d(inputBindGamepadKey5); i++)
         {
             var _btn = inputBindGamepadKey5[@ i];
@@ -340,7 +398,7 @@ switch (inputMethodCurrent)
 for (var i=0; i&lt;ds_list_size(inputGamepadList); i++)
 {
     var _pad = inputGamepadList[| i];
-    if (input_check_gamepad_anybutton(_pad))
+    if (input_check_gamepad_anybutton_pressed(_pad) != -1)
     {
         if (inputDevice != _pad || inputMethodCurrent == eINPUT_METHOD.KEYBOARD)
         {
@@ -356,7 +414,17 @@ for (var i=0; i&lt;ds_list_size(inputGamepadList); i++)
             }
             
         }
-        debug_log("GAMEPAD INPUT DETECTED ON GP#", _pad, "!");
+        debug_log("oINPUT &gt; GAMEPAD INPUT DETECTED ON GP#", _pad, "!");
+        
+        // Set layout as gamepad
+        if (inputDevice &lt;= 3) // xbox / xinput
+        {
+            debug_log("   &gt; GP TYPE : XBOX/XINPUT");
+        }
+        else
+        {
+            debug_log("   &gt; GP TYPE : PS/DINPUT");
+        }
     }
 }
 
@@ -376,9 +444,36 @@ if (inputMethodCurrent == eINPUT_METHOD.GAMEPAD)
             event_user(0);
         }
         
-        debug_log("KEYBOARD DETECTED!");
+        debug_log("oINPUT &gt; KEYBOARD DETECTED!");
     }
 }
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="3" enumb="0">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>/// Update gamepad vibration
+gamepad_set_vibration(inputDevice, inputVibration * inputVibrationAmplitude, inputVibration * inputVibrationAmplitude);
+inputVibration *= inputVibrationDamp;
+if (inputVibration &lt;= 0.01)
+    inputVibration = 0;
 </string>
           </argument>
         </arguments>
@@ -416,10 +511,17 @@ switch (_eventtype)
             ds_list_add(inputGamepadList, _padindex);
         }
         
+        // Reset vibration to 0
+        gamepad_set_vibration(_padindex, 0, 0);
+        
         // Set input method to gamepad &amp; set current input device to
         // connected gamepad
         inputMethodCurrent = eINPUT_METHOD.GAMEPAD;
         inputDevice = _padindex;
+        
+        // Detect small joystick drift &amp; set the deadzone automatically
+        var _inputmag = min(point_distance(0, 0, gamepad_axis_value(inputDevice, gp_axislh), gamepad_axis_value(inputDevice, gp_axislv)), 0.1);
+        gamepad_set_axis_deadzone(inputDevice, _inputmag);
         
         // Show input detection popup
         with (oUI)
@@ -495,9 +597,9 @@ for (var i=0; i&lt;=invKeysLevel; i++)
     var _unlocks = invKeysUnlock[@ i];
     for (var j=0; j&lt;array_length_1d(_unlocks); j++)
     {
-        var _keycode = _unlocks[@ j];
-        debug_log("unlocking [", chr(_keycode), " / ", _keycode, "]...");
-        inv_key_set_available(_keycode, true);
+        var _slotid = _unlocks[@ j];
+        debug_log("oINPUT USER1 &gt; unlocking key slot [", _slotid, "]...");
+        inv_key_set_available(_slotid, true);
     }
 }
 
@@ -524,13 +626,12 @@ for (var i=0; i&lt;=invKeysLevel; i++)
           <argument>
             <kind>1</kind>
             <string>/// Reset key slots upgrade status
-for (var i=0; i&lt;ds_list_size(invSlots); i++)
+var _key = ds_map_find_first(invKeyslots);
+while (_key != undefined)
 {
-    var _keydata = invSlots[| i];
-    _keydata[@ eINVKEY.AVAILABLE] = false;
+    inv_key_set_available(_key, false);
+    _key = ds_map_find_next(invKeyslots, _key);
 }
-
-debug_log("oGAMEVARS USER0&gt; THIS METHOD IS NOT USED PLEASE");
 </string>
           </argument>
         </arguments>

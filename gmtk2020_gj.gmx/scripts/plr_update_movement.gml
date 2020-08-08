@@ -30,19 +30,20 @@ if (upgradeMove)
 {
     var _inputh      = inputH[@ eINPUT.HLD];
     var _inputhpress = inputH[@ eINPUT.PRS];
+    var _inputdir    = sign(_inputh);
     
     // Apply initial boost
     if (_inputhpress != 0)
     {
-        var _accel = clamp(moveVelMax - vx * _inputh, 0, moveVelInit);
+        var _accel = clamp(moveVelMax - vx * _inputdir, -moveVelInit, moveVelInit);
         vx += _accel * _inputhpress;
     }
     
     // Apply movement
-    if (_inputh != 0)
+    if (_inputdir != 0)
     {
-        var _accel = clamp(moveVelMax - vx * _inputh, 0, moveVelAcc);
-        vx += _accel * _inputh;
+        var _accel = clamp(moveVelMax * abs(_inputh) - vx * _inputdir, -moveVelAcc, moveVelAcc);
+        vx += _accel * _inputdir;
         isMoving = true;
     }
     else
@@ -74,10 +75,11 @@ else
     // isFastfalling = false;
     // Update very simple & inferior movement : crawling
     var _inputh      = inputH[@ eINPUT.HLD];
-    if (_inputh != 0)
+    var _inputdir    = sign(_inputh);
+    if (_inputdir != 0)
     {
-        var _accel = clamp(moveVelMaxCrawl - vx * _inputh, 0, moveVelAccCrawl);
-        vx += _accel * _inputh;
+        var _accel = clamp(moveVelMaxCrawl - vx * _inputdir, 0, moveVelAccCrawl);
+        vx += _accel * _inputdir;
         isMoving = true;
     }
     else
@@ -91,9 +93,9 @@ if (upgradeKick)
 {
     if (!contactB && fsmState != "kick_knockback" && inputJump[@ eINPUT.PRS])
     {
-        var _inputh = inputH[@ eINPUT.HLD];
+        var _inputh = sign(inputH[@ eINPUT.HLD]);
         var _inputv = inputV[@ eINPUT.HLD];
-        if (_inputv = 1) // Down kick
+        if (_inputv > 0.8) // Down kick
         {
             // Switch to divekick state
             fsm_set("kick_down");
@@ -206,6 +208,9 @@ if (upgradeWeapon)
                 audio_sound_pitch(shootChargeSnd, lerp(1.0, 2.0, _interp));
                 audio_sound_gain(shootChargeSnd, lerp(0.25, 0.5, _interp), 0);
             }
+            
+            // Sey gamepad vibration
+            fx_gamepad_vibration_set(_interp);
         }
     }
     else if (_shootrel & isCharging)
@@ -219,17 +224,21 @@ if (upgradeWeapon)
         }
         sfx_play(sndWeaponShoot, 1.0, random_range(1.7, 2.3));
         
-        // TODO : Emit weapon attack
-        var _inputh = inputH[@ eINPUT.HLD];
+        // Apply screenshake and gamepad vibration
+        fx_camera_shake(8);
+        fx_gamepad_vibration(0.25);
+        
+        // Spawn weapon projectile
+        var _inputh = sign(inputH[@ eINPUT.HLD]);
         var _inputv = inputV[@ eINPUT.HLD];
         var _interp = clamp(shootChargeCtr / shootChargeMax, 0, 1);
         
         var _projectile = instance_create(x, y, oPlayerAttack);
-        if (_inputv != 0)
+        if (abs(_inputv) >= 0.5)
         {
             _projectile.vx = 0;
-            _projectile.vy = _inputv;
-            _projectile.image_angle = _inputv * -90;
+            _projectile.vy = sign(_inputv);
+            _projectile.image_angle = sign(_inputv) * -90;
         }
         else if (_inputh != 0)
         {

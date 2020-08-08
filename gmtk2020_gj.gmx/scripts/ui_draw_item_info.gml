@@ -1,5 +1,6 @@
-/// ui_draw_item_info(_basex, _basey, _itemtype, _titlecol, _desccol)
-var _basex = argument0, _basey = argument1, _itemtype = argument2, _titlecol = argument3, _desccol = argument4;
+/// ui_draw_item_info(_basex, _basey, _itemtype, _titlecol, _desccol, _menualpha = 1.0)
+var _basex = argument[0], _basey = argument[1], _itemtype = argument[2], _titlecol = argument[3], _desccol = argument[4];
+var _menualpha; if (argument_count > 5) _menualpha = argument[5]; else _menualpha = 1.0;
 // (item)
 var _iteminfo       = oGamevars.itemStr[@ _itemtype];
 var _itemstrx       = _basex + 16;
@@ -25,11 +26,11 @@ var _strwid = global.winWid - (_basex + 32);
 
 // (draw item text)
 draw_set_halign(0); draw_set_valign(0);
-ui_draw_text(_itemstrx, _itemstrtitley + _itemtitlescale, _itemtitlestr, _itemtitlescale, 0, c_black, 1.0); // item name
-ui_draw_text(_itemstrx, _itemstrtitley, _itemtitlestr, _itemtitlescale, 0, _titlecol, 1.0);
+ui_draw_text(_itemstrx, _itemstrtitley + _itemtitlescale, _itemtitlestr, _itemtitlescale, 0, c_black, _menualpha); // item name
+ui_draw_text(_itemstrx, _itemstrtitley, _itemtitlestr, _itemtitlescale, 0, _titlecol, _menualpha);
 
-ui_draw_text_ext(_itemstrx, _itemstrdescy + _itemdescscale, _itemdescstr, -1, _strwid, _itemdescscale, 0, c_black, 1.0); // desc
-ui_draw_text_ext(_itemstrx, _itemstrdescy, _itemdescstr, -1, _strwid, _itemdescscale, 0, _desccol, 1.0);
+ui_draw_text_ext(_itemstrx, _itemstrdescy + _itemdescscale, _itemdescstr, -1, _strwid, _itemdescscale, 0, c_black, _menualpha); // desc
+ui_draw_text_ext(_itemstrx, _itemstrdescy, _itemdescstr, -1, _strwid, _itemdescscale, 0, _desccol, _menualpha);
 
 // (draw item icon)
-draw_sprite_ext(sprPickup, _itemtype, _itemiconx, _itemicony, _itemiconscale, _itemiconscale, 0, c_white, 1.0);
+draw_sprite_ext(sprPickup, _itemtype, _itemiconx, _itemicony, _itemiconscale, _itemiconscale, 0, c_white, _menualpha);
